@@ -1,24 +1,21 @@
-// src/lib/api.ts
+import { AnalysisResult, StockAnalysisInput } from "./types";
 
-import { AnalysisResult } from "./types";
+export interface ConvertRequest {
+  code: string;
+  conversionType: ConversionType;
+}
 
-// API Configuration
 export const API_CONFIG = {
   baseURL: "http://localhost:3001/v1",
   models: [
-    "deepseek-r1",
+    "gpt-4o-2024-05-13",
     "claude-3-5-sonnet-20240620",
+    "deepseek-r1",
     "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
     "deepseek-v3",
-    "gpt-4o-2024-05-13",
     "Meta-Llama-3.3-70B-Instruct-Turbo"
   ],
-  imageAnalysisModels: [
-    "grok-3",
-    "gpt-4o",
-    "claude-3.7-sonnet"
-  ],
-  maxImageSize: 1024 * 1024 // 1MB max size
+  maxRequestSize: 1024 * 1024 // 1MB max size
 };
 
 // API Response Types
@@ -30,6 +27,16 @@ export interface OptimizeResponse {
 export interface AnalyzeResponse {
   analysisResult: string;
   usedModel: string;
+  technicalTrends: string;
+  volumePatterns: string;
+  supportResistance: string;
+  shortTermOutlook: string;
+  stopLoss: number;
+}
+
+export interface ConversionResponse {
+  convertedCode: string;
+  usedModel: string;
 }
 
 // API Request Types
@@ -38,14 +45,11 @@ export interface OptimizeRequest {
   optimizationType: "hooks" | "readability" | "linting" | "bugs";
 }
 
-export interface AnalyzeRequest {
-  imageData: string;
-}
+export type ConversionType = 'typescript' | 'javascript' | 'python' | 'java';
 
-export interface StockAnalysisInput {
-  symbol: string;
-  timeframe?: string;
-  indicators?: string[];
+export interface ConvertRequest {
+  code: string;
+  conversionType: ConversionType;
 }
 
 // API Service Functions
@@ -71,90 +75,6 @@ export async function optimizeCode(request: OptimizeRequest): Promise<OptimizeRe
   }
 }
 
-// Helper for image processing
-export function resizeImage(dataUrl: string, maxWidth = 800): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      if (!ctx) {
-        reject(new Error('Could not get canvas context'));
-        return;
-      }
-      
-      let width = img.width;
-      let height = img.height;
-      
-      // Calculate new dimensions while maintaining aspect ratio
-      if (width > maxWidth) {
-        const ratio = maxWidth / width;
-        width = maxWidth;
-        height = height * ratio;
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      // Use a lower quality (0.7) to reduce file size
-      const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      resolve(resizedDataUrl);
-    };
-    
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = dataUrl;
-  });
-}
-
-export async function analyzeChart(imageData: string): Promise<AnalysisResult> {
-  try {
-    // Resize the image to prevent 413 Payload Too Large errors
-    const resizedImageData = await resizeImage(imageData);
-    
-    // Extract only the base64 data part (remove the data:image/jpeg;base64, prefix)
-    const base64Data = resizedImageData.split(',')[1];
-    
-    const response = await fetch(`${API_CONFIG.baseURL}/analyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        imageData: base64Data 
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 413) {
-        throw new Error('Image file is too large. Please use a smaller image (under 1MB).');
-      }
-      
-      try {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to analyze chart');
-      } catch (jsonError) {
-        throw new Error(`Failed to analyze chart: ${response.statusText}`);
-      }
-    }
-
-    const data = await response.json();
-    return {
-      text: data.analysisResult,
-      technicalTrends: data.technicalTrends || [],
-      volumePatterns: data.volumePatterns || [],
-      supportResistance: data.supportResistance || [],
-      shortTermOutlook: data.shortTermOutlook || '',
-      stopLoss: data.stopLoss || null
-    };
-  } catch (error) {
-    console.error('API error:', error);
-    throw error;
-  }
-}
-
 export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisResult> {
   try {
     const response = await fetch(`${API_CONFIG.baseURL}/analyze`, {
@@ -170,7 +90,61 @@ export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisRe
       throw new Error(errorData.details || 'Failed to analyze stock');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    
+    // Validate the response data
+    if (!responseData.technicalTrends || !responseData.volumePatterns || 
+        !responseData.supportResistance || !responseData.shortTermOutlook || 
+        typeof responseData.stopLoss !== 'number') {
+      throw new Error('Invalid analysis response format');
+    }
+
+    return {
+      technicalTrends: responseData.technicalTrends,
+      volumePatterns: responseData.volumePatterns,
+      supportResistance: responseData.supportResistance,
+      shortTermOutlook: responseData.shortTermOutlook,
+      stopLoss: responseData.stopLoss,
+      text: responseData.analysisText || null
+    };
+  } catch (error) {
+    console.error('API error:', error);
+    throw error;
+  }
+}
+
+export async function convertCode(request: ConvertRequest): Promise<ConversionResponse> {
+  try {
+    const response = await fetch(`${API_CONFIG.baseURL}/convert`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    // First check if the response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server returned non-JSON response');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || 'Failed to convert code');
+    }
+
+    const data = await response.json();
+    
+    // Validate the response structure
+    if (!data.convertedCode || typeof data.convertedCode !== 'string') {
+      throw new Error('Invalid conversion response format');
+    }
+
+    return {
+      convertedCode: data.convertedCode,
+      usedModel: data.usedModel || 'unknown'
+    };
   } catch (error) {
     console.error('API error:', error);
     throw error;

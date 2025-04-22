@@ -4,7 +4,6 @@ import { OpenAI } from 'openai';
 
 const app = express();
 
-// Configure express to handle larger payloads
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
@@ -22,19 +21,6 @@ const AI_MODELS = [
   "gpt-4o-2024-05-13",
   "Meta-Llama-3.3-70B-Instruct-Turbo",
   "deepseek-r1",
-];
-
-// Image analysis models
-const IMAGE_ANALYSIS_MODELS = [
-    "claude-3-5-sonnet-20240620",
-  "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-  "deepseek-v3",
-  "gpt-4o-2024-05-13",
-  "Meta-Llama-3.3-70B-Instruct-Turbo",
-  "deepseek-r1",
-  "grok-3",
-  "gpt-4o",
-  "claude-3.7-sonnet"
 ];
 
 async function tryOptimizeWithModel(code, systemPrompt, modelName) {
@@ -55,29 +41,72 @@ async function tryOptimizeWithModel(code, systemPrompt, modelName) {
   }
 }
 
-async function tryAnalyzeWithModel(imageData, modelName) {
+async function tryAnalyzeStockWithModel(stockData, modelName) {
   try {
+    const systemPrompt = `You are an expert stock analyst on Indian Stocks Market and the stocks listed on national stock exchange in india.
+    You must respond ONLY with a JSON object containing the analysis results in rupees.
+    Analyze this stock data:
+    Company: ${stockData.companyName}
+    Price: Rupees${stockData.currentPrice}
+    Volume: ${stockData.volume}
+    ${stockData.peRatio ? `P/E Ratio: ${stockData.peRatio}` : ''}
+    ${stockData.eps ? `EPS: ${stockData.eps}` : ''}
+    ${stockData.marketCap ? `Market Cap: Rupees${stockData.marketCap}Crores` : ''}
+    ${stockData.dividend ? `Dividend: ${stockData.dividend}%` : ''}
+    ${stockData.beta ? `Beta: ${stockData.beta}` : ''}
+    ${stockData.news ? `Recent News: ${stockData.news}` : ''}`;
+
+    const userPrompt = `Analyze the stock data and return ONLY a JSON object with the following structure:
+    {
+      "technicalTrends": "detailed analysis of price trends in rupees",
+      "volumePatterns": "analysis of trading volume patterns in rupees",
+      "supportResistance": "key support and resistance levels in rupees",
+      "shortTermOutlook": "outlook for next 1-3 months in rupees",
+      "stopLoss": numeric_price_for_stop_loss
+    }
+    Do not include any other text, markdown formatting, or explanations outside the JSON object.`;
+
     const completion = await openai.chat.completions.create({
       model: modelName,
       messages: [
         { 
           role: "system", 
-          content: "You are an expert in analyzing stock charts. Provide a detailed technical analysis of the stock chart image." 
+          content: systemPrompt 
         },
         { 
           role: "user", 
-          content: [
-            { type: "text", text: "Analyze this stock chart and provide your insights:" },
-            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageData}` } }
-          ]
+          content: userPrompt 
         }
       ],
-      temperature: 0.3,
-      max_tokens: 2048
+      temperature: 0.4,
+      max_tokens: 2048,
+      response_format: { type: "json_object" }
     });
-    return completion.choices[0].message.content;
+
+    const content = completion.choices[0].message.content;
+    
+    const cleanedContent = content.replace(/```json\s*|\s*```/g, '').trim();
+    
+    try {
+      const parsedResult = JSON.parse(cleanedContent);
+      
+      if (!parsedResult.technicalTrends || 
+          !parsedResult.volumePatterns || 
+          !parsedResult.supportResistance || 
+          !parsedResult.shortTermOutlook || 
+          typeof parsedResult.stopLoss !== 'number') {
+        console.error(`Invalid response format from ${modelName}:`, parsedResult);
+        return null;
+      }
+      
+      return parsedResult;
+    } catch (parseError) {
+      console.error(`JSON parsing error from ${modelName}:`, parseError);
+      console.error('Raw content:', content);
+      return null;
+    }
   } catch (error) {
-    console.error(`Error with image analysis model ${modelName}:`, error);
+    console.error(`Error with model ${modelName}:`, error);
     return null;
   }
 }
@@ -132,105 +161,119 @@ app.post('/v1/optimize', async (req, res) => {
   }
 });
 
-// Stock chart analysis endpoint
 app.post('/v1/analyze', async (req, res) => {
   try {
-    const { imageData } = req.body;
+    const stockData = req.body;
     
-    if (!imageData || typeof imageData !== 'string') {
+    if (!stockData || !stockData.companyName || !stockData.currentPrice || !stockData.volume) {
       return res.status(400).json({ 
-        error: 'Invalid image data', 
-        details: 'Image data is required and must be a base64 string' 
+        error: 'Invalid stock data', 
+        details: 'Company name, current price, and volume are required' 
       });
     }
     
     let analysisResult = null;
     let usedModel = null;
+    let modelErrors = [];
     
-    // Try each model in sequence until one successfully analyzes the image
-    for (const model of IMAGE_ANALYSIS_MODELS) {
+    for (const model of AI_MODELS) {
       try {
-        analysisResult = await tryAnalyzeWithModel(imageData, model);
-        if (analysisResult) {
+        const result = await tryAnalyzeStockWithModel(stockData, model);
+        if (result) {
+          analysisResult = result;
           usedModel = model;
           break;
         }
       } catch (modelError) {
+        modelErrors.push(`${model}: ${modelError.message}`);
         console.error(`Error with model ${model}:`, modelError);
-        // Continue to the next model
       }
     }
     
-    // If all models failed, throw an error
     if (!analysisResult) {
-      throw new Error('All image analysis models failed to process the image. The models may not support image processing.');
+      throw new Error(`Failed to generate analysis. Model errors: ${modelErrors.join('; ')}`);
     }
-    
+
     res.json({
-      analysisResult,
+      ...analysisResult,
       usedModel
     });
   } catch (error) {
     console.error('Analysis error:', error);
     res.status(500).json({ 
-      error: 'Failed to analyze chart', 
+      error: 'Failed to analyze stock', 
       details: error.message || 'Unknown error occurred during analysis'
     });
   }
 });
 
-app.post('/v1/analyze', async (req, res) => {
+app.post('/v1/convert', async (req, res) => {
   try {
-    const stockData = req.body;
+    const { code, conversionType } = req.body;
     
-    const systemPrompt = `You are an expert stock analyst. Analyze the following stock data and provide insights:
-    Company: ${stockData.companyName}
-    Price: $${stockData.currentPrice}
-    Volume: ${stockData.volume}
-    ${stockData.peRatio ? `P/E Ratio: ${stockData.peRatio}` : ''}
-    ${stockData.eps ? `EPS: ${stockData.eps}` : ''}
-    ${stockData.news ? `Recent News: ${stockData.news}` : ''}`;
+    if (!code || !conversionType) {
+      return res.status(400).json({
+        error: 'Invalid request',
+        details: 'Both code and conversionType are required'
+      });
+    }
 
-    let analysisResult = null;
+    let systemPrompt = `You are an expert code converter. You will receive code to convert from one language/framework to another.
+    Convert the following code from ${conversionType.split('-')[0]} to ${conversionType.split('-')[2]}.
+    Ensure the converted code maintains the same functionality and follows best practices.
+    Return only the converted code without any explanations or markdown formatting.`;
+
+    let convertedCode = null;
     let usedModel = null;
+    let modelErrors = [];
 
     for (const model of AI_MODELS) {
-      const completion = await openai.chat.completions.create({
-        model: model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: "Provide a detailed analysis including technical trends, volume patterns, support/resistance levels, short-term outlook, and recommended stop loss." }
-        ],
-        temperature: 0.3,
-        max_tokens: 2048
-      });
+      try {
+        const completion = await openai.chat.completions.create({
+          model: model,
+          messages: [
+            { 
+              role: "system", 
+              content: systemPrompt 
+            },
+            { 
+              role: "user", 
+              content: code 
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 2048
+        });
 
-      if (completion.choices[0].message.content) {
-        analysisResult = completion.choices[0].message.content;
-        usedModel = model;
-        break;
+        const content = completion.choices[0].message.content;
+        
+        // Clean up any potential markdown formatting
+        const cleanedContent = content.replace(/```[\w]*\n?|\n?```/g, '').trim();
+        
+        if (cleanedContent) {
+          convertedCode = cleanedContent;
+          usedModel = model;
+          break;
+        }
+      } catch (modelError) {
+        modelErrors.push(`${model}: ${modelError.message}`);
+        console.error(`Error with model ${model}:`, modelError);
       }
     }
 
-    if (!analysisResult) {
-      throw new Error('Failed to generate analysis');
+    if (!convertedCode) {
+      throw new Error(`Failed to convert code. Model errors: ${modelErrors.join('; ')}`);
     }
 
-    // Parse the analysis into structured format
-    const result = {
-      technicalTrends: "Bullish trend with increasing momentum",
-      volumePatterns: "Above average volume indicating strong interest",
-      supportResistance: "Support at $95, Resistance at $105",
-      shortTermOutlook: "Positive outlook with potential upside of 5-7%",
-      stopLoss: stockData.currentPrice * 0.95, // Example: 5% below current price
-    };
-
-    res.json(result);
+    res.json({
+      convertedCode,
+      usedModel
+    });
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error('Conversion error:', error);
     res.status(500).json({ 
-      error: 'Failed to analyze stock', 
-      details: error.message || 'Unknown error occurred during analysis'
+      error: 'Failed to convert code', 
+      details: error.message || 'Unknown error occurred during conversion'
     });
   }
 });

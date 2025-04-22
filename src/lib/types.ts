@@ -2,8 +2,6 @@ import { ReactNode } from "react";
 
 export type ClassValue = string | number | boolean | undefined | null | { [key: string]: boolean } | ClassValue[];
 
-
-
 export interface AnalyzePageProps {
   children?: ReactNode;
 }
@@ -56,23 +54,40 @@ export interface CodeOptimizeButtonProps {
 }
 
 export interface StockAnalysisInput {
-    companyName: string;
-    currentPrice: number;
-    volume: number;
-    chartImage?: string;
-    news?: string;
-    peRatio?: number;
-    eps?: number;
-    marketCap?: number;
-    dividend?: number;
-    beta?: number;
-  }
+  companyName: string;
+  currentPrice: number;
+  volume: number;
+  news?: string;
+  peRatio?: number;
+  eps?: number;
+  marketCap?: number;
+  dividend?: number;
+  beta?: number;
+}
   
-  export interface AnalysisResult {
-    technicalTrends: string;
-    volumePatterns: string;
-    supportResistance: string;
-    shortTermOutlook: string;
-    stopLoss: number;
-    text?: string | null;
+export interface AnalysisResult {
+  technicalTrends: string;
+  volumePatterns: string;
+  supportResistance: string;
+  shortTermOutlook: string;
+  stopLoss: number;
+  text?: string;
+}
+
+export type ConversionType = 
+  | "javascript-to-typescript"
+  | "typescript-to-python"
+  | "python-to-javascript"
+  | "react-to-vue"
+  | "vue-to-react"
+  | "javascript-to-java";
+
+export interface ConversionResponse {
+  convertedCode: string;
+  usedModel: string;
+}
+
+export interface ConvertRequest {
+    code: string;
+    conversionType: ConversionType;
   }

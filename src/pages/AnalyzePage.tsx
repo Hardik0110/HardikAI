@@ -16,8 +16,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
-import { LineChart } from "lucide-react"
-import { motion } from "framer-motion"
+import { LineChart, X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { analyzeStock } from "@/lib/api"
 import type { StockAnalysisInput, AnalysisResult } from "@/lib/types"
 
@@ -25,13 +25,12 @@ const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   currentPrice: z.number().positive("Price must be positive"),
   volume: z.number().positive("Volume must be positive"),
-  chartImage: z.string().optional(),
-  news: z.string().optional(),
-  peRatio: z.number().positive().optional(),
-  eps: z.number().optional(),
-  marketCap: z.number().positive().optional(),
-  dividend: z.number().min(0).optional(),
-  beta: z.number().optional(),
+  news: z.string().optional().default(""),
+  peRatio: z.number().positive().optional().nullable(),
+  eps: z.number().optional().nullable(),
+  marketCap: z.number().positive().optional().nullable(),
+  dividend: z.number().min(0).optional().nullable(),
+  beta: z.number().optional().nullable(),
 })
 
 export default function AnalyzePage() {
@@ -45,13 +44,31 @@ export default function AnalyzePage() {
       companyName: "",
       currentPrice: 0,
       volume: 0,
+      news: "",
+      peRatio: null,
+      eps: null,
+      marketCap: null,
+      dividend: null,
+      beta: null,
     },
   })
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsAnalyzing(true)
     try {
-      const result = await analyzeStock(data as StockAnalysisInput)
+      const cleanData: StockAnalysisInput = {
+        companyName: data.companyName,
+        currentPrice: data.currentPrice,
+        volume: data.volume,
+        news: data.news || undefined,
+        peRatio: data.peRatio ?? undefined,
+        eps: data.eps ?? undefined,
+        marketCap: data.marketCap ?? undefined,
+        dividend: data.dividend ?? undefined,
+        beta: data.beta ?? undefined,
+      };
+
+      const result = await analyzeStock(cleanData)
       setAnalysisResult(result)
       toast({
         title: "Analysis complete",
@@ -69,6 +86,10 @@ export default function AnalyzePage() {
     }
   }
 
+  const closePopup = () => {
+    setAnalysisResult(null)
+  }
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -81,164 +102,250 @@ export default function AnalyzePage() {
           Stock Analysis
         </motion.h1>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <Card className="border-cyan/20 shadow-md">
-              <CardContent className="p-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <motion.div 
+          className="max-w-2xl mx-auto"
+          initial={{ opacity: 0, x: -20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-cyan/20 shadow-md">
+            <CardContent className="p-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Company Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Apple Inc." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="companyName"
+                      name="currentPrice"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Company Name</FormLabel>
+                          <FormLabel>Current Price ($)</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Apple Inc." {...field} />
+                            <Input 
+                              type="number" 
+                              placeholder="0.00"
+                              value={field.value}
+                              onChange={e => field.onChange(parseFloat(e.target.value) || 0)} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="currentPrice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Price ($)</FormLabel>
-                            <FormControl>
-                              <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="volume"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Volume</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="peRatio"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>P/E Ratio</FormLabel>
-                            <FormControl>
-                              <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="eps"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>EPS</FormLabel>
-                            <FormControl>
-                              <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
                     <FormField
                       control={form.control}
-                      name="news"
+                      name="volume"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Recent News (Optional)</FormLabel>
+                          <FormLabel>Volume</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Enter any relevant news..." {...field} />
+                            <Input 
+                              type="number" 
+                              placeholder="0"
+                              value={field.value}
+                              onChange={e => field.onChange(parseFloat(e.target.value) || 0)} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-
-                    <Button type="submit" disabled={isAnalyzing} className="w-full">
-                      {isAnalyzing ? "Analyzing..." : "Analyze Stock"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card className="border-pink/20 shadow-md h-full">
-              <CardContent className="p-6">
-                {analysisResult ? (
-                  <motion.div
-                    className="space-y-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <LineChart className="h-5 w-5 text-pink" />
-                      <h3 className="text-lg font-medium text-gradient">Analysis Results</h3>
-                    </div>
-
-                    <div className="rounded-md bg-dark/5 p-4 border border-pink/10">
-                      <h4 className="font-medium mb-2">Technical Trends</h4>
-                      <p className="text-sm">{analysisResult.technicalTrends}</p>
-                    </div>
-
-                    <div className="rounded-md bg-dark/5 p-4 border border-pink/10">
-                      <h4 className="font-medium mb-2">Volume Patterns</h4>
-                      <p className="text-sm">{analysisResult.volumePatterns}</p>
-                    </div>
-
-                    <div className="rounded-md bg-dark/5 p-4 border border-pink/10">
-                      <h4 className="font-medium mb-2">Support/Resistance Levels</h4>
-                      <p className="text-sm">{analysisResult.supportResistance}</p>
-                    </div>
-
-                    <div className="rounded-md bg-dark/5 p-4 border border-pink/10">
-                      <h4 className="font-medium mb-2">Short-term Outlook</h4>
-                      <p className="text-sm">{analysisResult.shortTermOutlook}</p>
-                    </div>
-
-                    <div className="rounded-md bg-dark/5 p-4 border border-pink/10">
-                      <h4 className="font-medium mb-2">Stop Loss</h4>
-                      <p className="text-sm">${analysisResult.stopLoss.toFixed(2)}</p>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-                    <LineChart className="mb-2 h-12 w-12 text-pink opacity-50" />
-                    <h3 className="text-lg font-medium">No Analysis Yet</h3>
-                    <p className="mt-2">Fill in the stock details and click "Analyze" to get insights</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="peRatio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>P/E Ratio</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              placeholder="Optional"
+                              value={field.value ?? ""} 
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="eps"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>EPS</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              placeholder="Optional"
+                              value={field.value ?? ""} 
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="marketCap"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Market Cap (inCrore)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              placeholder="Optional"
+                              value={field.value ?? ""} 
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="dividend"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dividend (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              placeholder="Optional"
+                              value={field.value ?? ""} 
+                              onChange={(e) => {
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="news"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Recent News (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Enter any relevant news..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" disabled={isAnalyzing} className="w-full">
+                    {isAnalyzing ? "Analyzing..." : "Analyze Stock"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <AnimatePresence>
+          {analysisResult && (
+            <motion.div
+              className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto relative"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <button
+                  onClick={closePopup}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <LineChart className="h-5 w-5 text-pink" />
+                    <h3 className="text-lg font-medium text-gradient">Analysis Results</h3>
+                  </div>
+
+                  <div className="rounded-md bg-gray-50 p-4 border border-pink/10">
+                    <h4 className="font-medium mb-2">Technical Trends</h4>
+                    <p className="text-sm">{analysisResult.technicalTrends}</p>
+                  </div>
+
+                  <div className="rounded-md bg-gray-50 p-4 border border-pink/10">
+                    <h4 className="font-medium mb-2">Volume Patterns</h4>
+                    <p className="text-sm">{analysisResult.volumePatterns}</p>
+                  </div>
+
+                  <div className="rounded-md bg-gray-50 p-4 border border-pink/10">
+                    <h4 className="font-medium mb-2">Support/Resistance Levels</h4>
+                    <p className="text-sm">{analysisResult.supportResistance}</p>
+                  </div>
+
+                  <div className="rounded-md bg-gray-50 p-4 border border-pink/10">
+                    <h4 className="font-medium mb-2">Short-term Outlook</h4>
+                    <p className="text-sm">{analysisResult.shortTermOutlook}</p>
+                  </div>
+
+                  <div className="rounded-md bg-gray-50 p-4 border border-pink/10">
+                    <h4 className="font-medium mb-2">Stop Loss</h4>
+                    <p className="text-sm">{analysisResult.stopLoss.toFixed(2)}</p>
+                  </div>
+
+                  <Button onClick={closePopup} className="w-full">
+                    Close
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
   )

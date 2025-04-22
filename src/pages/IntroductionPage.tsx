@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { GradientButton } from "@/components/ui/gradient-button"
+import { AnimatedText } from "@/components/ui/animated-text"
 
 export default function IntroductionPage() {
   return (
@@ -12,15 +13,19 @@ export default function IntroductionPage() {
         transition={{ duration: 0.6 }}
       >
         <motion.h1
-          className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-light"
+          className="font-extrabold  md:text-4xl text-light"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           Welcome to{" "}
-          <span className="text-cyan">
-            Stock<span className="text-pink">Script</span>
-          </span>
+          <AnimatedText
+            text="StockScript"
+            className="inline-block"
+            replay={true}
+            delay={0.05}
+            dualColor={true}
+          />
         </motion.h1>
         <motion.p
           className="text-xl text-light/80"
@@ -28,7 +33,7 @@ export default function IntroductionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          Optimize your code and analyze stocks with powerful AI tools
+          Optimize your code and analyze stocks with  AI 
         </motion.p>
         <motion.div
           className="pt-6"
@@ -39,7 +44,7 @@ export default function IntroductionPage() {
           <Link to="/login">
             <GradientButton
               variant="variant"
-              className="relative overflow-hidden rounded-full px-8 py-6 text-lg font-semibold transition-all duration-500"
+              className="relative overflow-hidden rounded-full px-6 py-4 text-lg font-semibold transition-all duration-500"
             >
               <motion.span
                 className="absolute inset-0 rounded-full border-2 border-green"
@@ -53,7 +58,7 @@ export default function IntroductionPage() {
                   ease: "easeInOut",
                 }}
               />
-              Getting Started
+              Login
             </GradientButton>
           </Link>
         </motion.div>
