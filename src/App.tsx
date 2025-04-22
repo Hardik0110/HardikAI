@@ -1,9 +1,6 @@
-"use client"
-
 import { Routes, Route, useLocation } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
 import { Toaster } from "@/components/ui/toaster"
-
 import IntroductionPage from "@/pages/IntroductionPage"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"

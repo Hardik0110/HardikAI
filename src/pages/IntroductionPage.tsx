@@ -20,7 +20,7 @@ export default function IntroductionPage() {
         >
           Welcome to{" "}
           <AnimatedText
-            text="StockScript"
+            text="Hardik's {AI}"
             className="inline-block"
             replay={true}
             delay={0.05}

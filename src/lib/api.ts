@@ -1,9 +1,4 @@
-import { AnalysisResult, StockAnalysisInput } from "./types";
-
-export interface ConvertRequest {
-  code: string;
-  conversionType: ConversionType;
-}
+import { AnalysisResult, StockAnalysisInput, ConversionType } from "./types";
 
 export const API_CONFIG = {
   baseURL: "http://localhost:3001/v1",
@@ -44,8 +39,6 @@ export interface OptimizeRequest {
   code: string;
   optimizationType: "hooks" | "readability" | "linting" | "bugs";
 }
-
-export type ConversionType = 'typescript' | 'javascript' | 'python' | 'java';
 
 export interface ConvertRequest {
   code: string;
@@ -115,6 +108,9 @@ export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisRe
 
 export async function convertCode(request: ConvertRequest): Promise<ConversionResponse> {
   try {
+    // Log the request for debugging
+    console.log('Convert code request:', request);
+    
     const response = await fetch(`${API_CONFIG.baseURL}/convert`, {
       method: 'POST',
       headers: {
@@ -123,28 +119,40 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
       body: JSON.stringify(request),
     });
 
-    // First check if the response is JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Server returned non-JSON response');
-    }
-
+    // Check if the response is ok
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.details || 'Failed to convert code');
+      console.error('Convert API error status:', response.status);
+      let errorMessage = 'Failed to convert code';
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.details || errorMessage;
+      } catch (jsonError) {
+        // If we can't parse the error as JSON, use the default message
+        console.error('Error parsing error response:', jsonError);
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-    
-    // Validate the response structure
-    if (!data.convertedCode || typeof data.convertedCode !== 'string') {
-      throw new Error('Invalid conversion response format');
-    }
+    // Try to parse the response as JSON
+    try {
+      const data = await response.json();
+      
+      // Validate the response has the expected structure
+      if (!data || !data.convertedCode || typeof data.convertedCode !== 'string') {
+        console.error('Invalid conversion response:', data);
+        throw new Error('Invalid conversion response format');
+      }
 
-    return {
-      convertedCode: data.convertedCode,
-      usedModel: data.usedModel || 'unknown'
-    };
+      return {
+        convertedCode: data.convertedCode,
+        usedModel: data.usedModel || 'unknown'
+      };
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      throw new Error('Error parsing conversion response');
+    }
   } catch (error) {
     console.error('API error:', error);
     throw error;

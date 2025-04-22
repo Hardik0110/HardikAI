@@ -119,7 +119,9 @@ export default function AnalyzePage() {
                       <FormItem>
                         <FormLabel>Company Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Apple Inc." {...field} />
+                          <Input 
+                            className="border-white"
+                            placeholder="e.g. Apple Inc." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -132,11 +134,11 @@ export default function AnalyzePage() {
                       name="currentPrice"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Current Price ($)</FormLabel>
+                          <FormLabel>Current Price (Rupees)</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              placeholder="0.00"
                               value={field.value}
                               onChange={e => field.onChange(parseFloat(e.target.value) || 0)} 
                             />
@@ -154,8 +156,8 @@ export default function AnalyzePage() {
                           <FormLabel>Volume</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              placeholder="0"
                               value={field.value}
                               onChange={e => field.onChange(parseFloat(e.target.value) || 0)} 
                             />
@@ -175,8 +177,8 @@ export default function AnalyzePage() {
                           <FormLabel>P/E Ratio</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              step="0.01" 
                               placeholder="Optional"
                               value={field.value ?? ""} 
                               onChange={(e) => {
@@ -198,8 +200,8 @@ export default function AnalyzePage() {
                           <FormLabel>EPS</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              step="0.01" 
                               placeholder="Optional"
                               value={field.value ?? ""} 
                               onChange={(e) => {
@@ -223,8 +225,8 @@ export default function AnalyzePage() {
                           <FormLabel>Market Cap (inCrore)</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              step="0.01" 
                               placeholder="Optional"
                               value={field.value ?? ""} 
                               onChange={(e) => {
@@ -246,8 +248,8 @@ export default function AnalyzePage() {
                           <FormLabel>Dividend (%)</FormLabel>
                           <FormControl>
                             <Input 
+                              className="border-white"
                               type="number" 
-                              step="0.01" 
                               placeholder="Optional"
                               value={field.value ?? ""} 
                               onChange={(e) => {
@@ -269,7 +271,9 @@ export default function AnalyzePage() {
                       <FormItem>
                         <FormLabel>Recent News (Optional)</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Enter any relevant news..." {...field} />
+                          <Textarea 
+                          className="border-white"
+                          placeholder="Enter any relevant news..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

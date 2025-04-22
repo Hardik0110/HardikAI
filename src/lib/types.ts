@@ -88,6 +88,6 @@ export interface ConversionResponse {
 }
 
 export interface ConvertRequest {
-    code: string;
-    conversionType: ConversionType;
-  }
+  code: string;
+  conversionType: ConversionType;
+}

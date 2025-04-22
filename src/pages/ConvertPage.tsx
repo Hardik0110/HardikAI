@@ -29,19 +29,26 @@ export default function ConvertPage() {
     setIsConverting(true)
 
     try {
+      // Log the request for debugging
+      console.log(`Starting conversion: ${conversionType}`);
+      
       const response = await convertCode({
         code,
         conversionType
       })
 
+      console.log('Conversion successful:', response);
+      
       setConvertedCode(response.convertedCode)
       setUsedModel(response.usedModel)
 
       toast({
         title: "Code converted",
-        description: `Converted to ${conversionType}`,
+        description: `Converted using ${conversionType}`,
       })
     } catch (error) {
+      console.error('Conversion error:', error);
+      
       toast({
         title: "Conversion failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
@@ -130,7 +137,7 @@ export default function ConvertPage() {
             <CodeOptimizeButton
               onClick={() => handleConvert("javascript-to-java")}
               isLoading={isConverting}
-              icon="FileCode"
+              icon="FileText"
               label="Convert to Java"
               description="Convert JavaScript code to Java"
               index={5}

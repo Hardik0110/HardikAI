@@ -27,10 +27,10 @@ const AnimatedText = React.forwardRef<HTMLDivElement, AnimatedTextProps>(
     textClassName,
     underlineClassName,
     as: Component = "h1",
-    underlineGradient = "from-blue-500 via-purple-500 to-pink-500",
+    underlineGradient = "from-cyan-500 via-purple-500 to-red-500",
     underlineHeight = "h-1",
     underlineOffset = "-bottom-2",
-    dualColor = false, // Default to false
+    dualColor = true, // Default to false
     ...props
   }, ref) => {
     const letters = Array.from(text)
@@ -105,7 +105,7 @@ const AnimatedText = React.forwardRef<HTMLDivElement, AnimatedTextProps>(
                 variants={child}
                 className={
                   dualColor
-                    ? index < 5 // "Stock" is 5 characters
+                    ? index < 8 // "Stock" is 5 characters
                       ? "text-cyan-500" // First part in cyan
                       : "text-red-500"  // Second part in red
                     : ""

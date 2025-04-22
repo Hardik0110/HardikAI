@@ -218,53 +218,59 @@ app.post('/v1/convert', async (req, res) => {
       });
     }
 
-    let systemPrompt = `You are an expert code converter. You will receive code to convert from one language/framework to another.
-    Convert the following code from ${conversionType.split('-')[0]} to ${conversionType.split('-')[2]}.
+    // Process the conversion type to get source and target
+    const parts = conversionType.split('-to-');
+    if (parts.length !== 2) {
+      return res.status(400).json({
+        error: 'Invalid conversion type',
+        details: 'The conversionType should be in the format "source-to-target"'
+      });
+    }
+
+    const [sourceType, targetType] = parts;
+
+    // Create the system prompt
+    const systemPrompt = `You are an expert code converter. Convert the following code from ${sourceType} to ${targetType}. 
     Ensure the converted code maintains the same functionality and follows best practices.
     Return only the converted code without any explanations or markdown formatting.`;
 
+    // Try different models
     let convertedCode = null;
     let usedModel = null;
-    let modelErrors = [];
 
     for (const model of AI_MODELS) {
       try {
         const completion = await openai.chat.completions.create({
           model: model,
           messages: [
-            { 
-              role: "system", 
-              content: systemPrompt 
-            },
-            { 
-              role: "user", 
-              content: code 
-            }
+            { role: "system", content: systemPrompt },
+            { role: "user", content: code }
           ],
           temperature: 0.3,
           max_tokens: 2048
         });
 
-        const content = completion.choices[0].message.content;
-        
-        // Clean up any potential markdown formatting
-        const cleanedContent = content.replace(/```[\w]*\n?|\n?```/g, '').trim();
-        
-        if (cleanedContent) {
-          convertedCode = cleanedContent;
-          usedModel = model;
-          break;
+        if (completion && completion.choices && completion.choices[0] && completion.choices[0].message) {
+          // Clean up any potential markdown formatting
+          const content = completion.choices[0].message.content;
+          const cleanedContent = content.replace(/```[\w]*\n?|\n?```/g, '').trim();
+          
+          if (cleanedContent) {
+            convertedCode = cleanedContent;
+            usedModel = model;
+            break;
+          }
         }
       } catch (modelError) {
-        modelErrors.push(`${model}: ${modelError.message}`);
         console.error(`Error with model ${model}:`, modelError);
       }
     }
 
     if (!convertedCode) {
-      throw new Error(`Failed to convert code. Model errors: ${modelErrors.join('; ')}`);
+      throw new Error('All models failed to convert the code');
     }
 
+    // Return the successful result
     res.json({
       convertedCode,
       usedModel

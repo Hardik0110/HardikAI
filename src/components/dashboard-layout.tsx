@@ -12,7 +12,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen flex-col ">
-      <header className="shrink-0 sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
+      <header className="shrink-0 sticky top-0 z-10 border-b  backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-2">
             <motion.span
@@ -20,7 +20,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              StockScript
+              Hardik's AI
             </motion.span>
           </Link>
           <nav className="flex items-center gap-4">
@@ -53,4 +53,3 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     </div>
   )
 }
-//     </div>

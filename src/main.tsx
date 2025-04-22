@@ -9,7 +9,7 @@ import { Toaster } from "./components/ui/toaster"
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider defaultTheme="light" storageKey="stockscript-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="stockscript-theme">
         <App />
         <Toaster />
       </ThemeProvider>

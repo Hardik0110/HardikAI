@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 type OptimizeButtonProps = {
   onClick: () => void
   isLoading: boolean
-  icon: "Sparkles" | "FileText" | "CheckCircle" | "Bug"
+  icon: "Sparkles" | "FileText" | "CheckCircle" | "Bug" | "Component"
   label: string
   description: string
   index?: number
@@ -13,7 +13,7 @@ type OptimizeButtonProps = {
 
 export function CodeOptimizeButton({ onClick, isLoading, icon, label, description, index = 0 }: OptimizeButtonProps) {
   const IconComponent: LucideIcon =
-    icon === "Sparkles" ? Sparkles : icon === "FileText" ? FileText : icon === "CheckCircle" ? CheckCircle : Bug
+    icon === "Sparkles" ? Sparkles : icon === "FileText" ? FileText : icon === "CheckCircle" ? CheckCircle : Bug 
 
   return (
     <motion.div

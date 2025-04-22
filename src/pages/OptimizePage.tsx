@@ -66,15 +66,15 @@ export default function OptimizePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Optimize Code
+          Optimize Code By Entering Your Code Below 
         </motion.h1>
 
         <div className="grid gap-6 md:grid-cols-[1fr_auto]">
-          <div className="space-y-4">
+          <div className="space-y-4 ">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <Textarea
                 placeholder="Paste your code here..."
-                className="min-h-[600px] font-bold border-cyan/20 focus:border-cyan focus:ring-cyan"
+                className="min-h-[600px] font-bold border-cyan/20 focus:border-cyan focus:ring-cyan text-white"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />

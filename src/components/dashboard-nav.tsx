@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Code, Home, LineChart } from "lucide-react"
+import { Code, FileCode, Home, LineChart, Speech } from "lucide-react"
 import { motion } from "framer-motion"
 
 const navItems = [
@@ -20,6 +20,16 @@ const navItems = [
     label: "Analyze",
     icon: LineChart,
   },
+  {
+    path: "/convert",
+    label: "Convert",
+    icon: FileCode,
+  },
+  {
+    path: "/dailystandup",
+    label: "DailyStandup",
+    icon: Speech,
+  }
 ]
 
 export function DashboardNav() {
