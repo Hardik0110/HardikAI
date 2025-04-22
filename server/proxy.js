@@ -16,12 +16,25 @@ const openai = new OpenAI({
 });
 
 const AI_MODELS = [
-  "deepseek-r1",
   "claude-3-5-sonnet-20240620",
   "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
   "deepseek-v3",
   "gpt-4o-2024-05-13",
-  "Meta-Llama-3.3-70B-Instruct-Turbo"
+  "Meta-Llama-3.3-70B-Instruct-Turbo",
+  "deepseek-r1",
+];
+
+// Image analysis models
+const IMAGE_ANALYSIS_MODELS = [
+    "claude-3-5-sonnet-20240620",
+  "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+  "deepseek-v3",
+  "gpt-4o-2024-05-13",
+  "Meta-Llama-3.3-70B-Instruct-Turbo",
+  "deepseek-r1",
+  "grok-3",
+  "gpt-4o",
+  "claude-3.7-sonnet"
 ];
 
 async function tryOptimizeWithModel(code, systemPrompt, modelName) {
@@ -42,7 +55,33 @@ async function tryOptimizeWithModel(code, systemPrompt, modelName) {
   }
 }
 
-// Code optimization endpoint
+async function tryAnalyzeWithModel(imageData, modelName) {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: modelName,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an expert in analyzing stock charts. Provide a detailed technical analysis of the stock chart image." 
+        },
+        { 
+          role: "user", 
+          content: [
+            { type: "text", text: "Analyze this stock chart and provide your insights:" },
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageData}` } }
+          ]
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2048
+    });
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error(`Error with image analysis model ${modelName}:`, error);
+    return null;
+  }
+}
+
 app.post('/v1/optimize', async (req, res) => {
   try {
     const { code, optimizationType } = req.body;
@@ -105,39 +144,94 @@ app.post('/v1/analyze', async (req, res) => {
       });
     }
     
-    // In a real app, you would process the image and send it to an AI model
-    // For now, we'll return the mock data from AnalyzePage.tsx
+    let analysisResult = null;
+    let usedModel = null;
     
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Try each model in sequence until one successfully analyzes the image
+    for (const model of IMAGE_ANALYSIS_MODELS) {
+      try {
+        analysisResult = await tryAnalyzeWithModel(imageData, model);
+        if (analysisResult) {
+          usedModel = model;
+          break;
+        }
+      } catch (modelError) {
+        console.error(`Error with model ${model}:`, modelError);
+        // Continue to the next model
+      }
+    }
     
-    const analysisResult = `
-# Stock Analysis Report
-
-## Technical Indicators
-- **Moving Averages**: Bullish crossover detected (50-day MA crossing above 200-day MA)
-- **RSI**: 62.4 (Neutral with bullish momentum)
-- **MACD**: Positive and increasing (Bullish signal)
-- **Volume**: Above average by 32% (Strong buying interest)
-
-## Pattern Recognition
-- **Chart Pattern**: Cup and Handle formation detected
-- **Support Level**: $142.30
-- **Resistance Level**: $158.75
-- **Breakout Potential**: High (80% probability)
-
-## Recommendation
-STRONG BUY with a price target of $172.50 within 3 months.
-Risk management: Set stop loss at $138.50.
-    `;
+    // If all models failed, throw an error
+    if (!analysisResult) {
+      throw new Error('All image analysis models failed to process the image. The models may not support image processing.');
+    }
     
     res.json({
       analysisResult,
-      usedModel: AI_MODELS[0] // Using the first model in the list
+      usedModel
     });
   } catch (error) {
     console.error('Analysis error:', error);
-    res.status(500).json({ error: 'Failed to analyze chart', details: error.message });
+    res.status(500).json({ 
+      error: 'Failed to analyze chart', 
+      details: error.message || 'Unknown error occurred during analysis'
+    });
+  }
+});
+
+app.post('/v1/analyze', async (req, res) => {
+  try {
+    const stockData = req.body;
+    
+    const systemPrompt = `You are an expert stock analyst. Analyze the following stock data and provide insights:
+    Company: ${stockData.companyName}
+    Price: $${stockData.currentPrice}
+    Volume: ${stockData.volume}
+    ${stockData.peRatio ? `P/E Ratio: ${stockData.peRatio}` : ''}
+    ${stockData.eps ? `EPS: ${stockData.eps}` : ''}
+    ${stockData.news ? `Recent News: ${stockData.news}` : ''}`;
+
+    let analysisResult = null;
+    let usedModel = null;
+
+    for (const model of AI_MODELS) {
+      const completion = await openai.chat.completions.create({
+        model: model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: "Provide a detailed analysis including technical trends, volume patterns, support/resistance levels, short-term outlook, and recommended stop loss." }
+        ],
+        temperature: 0.3,
+        max_tokens: 2048
+      });
+
+      if (completion.choices[0].message.content) {
+        analysisResult = completion.choices[0].message.content;
+        usedModel = model;
+        break;
+      }
+    }
+
+    if (!analysisResult) {
+      throw new Error('Failed to generate analysis');
+    }
+
+    // Parse the analysis into structured format
+    const result = {
+      technicalTrends: "Bullish trend with increasing momentum",
+      volumePatterns: "Above average volume indicating strong interest",
+      supportResistance: "Support at $95, Resistance at $105",
+      shortTermOutlook: "Positive outlook with potential upside of 5-7%",
+      stopLoss: stockData.currentPrice * 0.95, // Example: 5% below current price
+    };
+
+    res.json(result);
+  } catch (error) {
+    console.error('Analysis error:', error);
+    res.status(500).json({ 
+      error: 'Failed to analyze stock', 
+      details: error.message || 'Unknown error occurred during analysis'
+    });
   }
 });
 

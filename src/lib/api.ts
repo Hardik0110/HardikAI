@@ -13,6 +13,11 @@ export const API_CONFIG = {
     "gpt-4o-2024-05-13",
     "Meta-Llama-3.3-70B-Instruct-Turbo"
   ],
+  imageAnalysisModels: [
+    "grok-3",
+    "gpt-4o",
+    "claude-3.7-sonnet"
+  ],
   maxImageSize: 1024 * 1024 // 1MB max size
 };
 
@@ -35,6 +40,12 @@ export interface OptimizeRequest {
 
 export interface AnalyzeRequest {
   imageData: string;
+}
+
+export interface StockAnalysisInput {
+  symbol: string;
+  timeframe?: string;
+  indicators?: string[];
 }
 
 // API Service Functions
@@ -130,7 +141,36 @@ export async function analyzeChart(imageData: string): Promise<AnalysisResult> {
     }
 
     const data = await response.json();
-    return { text: data.analysisResult };
+    return {
+      text: data.analysisResult,
+      technicalTrends: data.technicalTrends || [],
+      volumePatterns: data.volumePatterns || [],
+      supportResistance: data.supportResistance || [],
+      shortTermOutlook: data.shortTermOutlook || '',
+      stopLoss: data.stopLoss || null
+    };
+  } catch (error) {
+    console.error('API error:', error);
+    throw error;
+  }
+}
+
+export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisResult> {
+  try {
+    const response = await fetch(`${API_CONFIG.baseURL}/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || 'Failed to analyze stock');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('API error:', error);
     throw error;

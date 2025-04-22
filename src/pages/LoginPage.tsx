@@ -100,7 +100,7 @@ export default function LoginPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Button type="submit" variant="gradient" className="w-full" disabled={isLoading}>
+                <Button type="submit" variant="default" className="w-full bg-gradient-to-r from-cyan to-blue-600" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </motion.div>

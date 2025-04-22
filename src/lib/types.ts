@@ -2,9 +2,7 @@ import { ReactNode } from "react";
 
 export type ClassValue = string | number | boolean | undefined | null | { [key: string]: boolean } | ClassValue[];
 
-export interface AnalysisResult {
-  text: string | null;
-}
+
 
 export interface AnalyzePageProps {
   children?: ReactNode;
@@ -56,3 +54,25 @@ export interface CodeOptimizeButtonProps {
   description: string;
   index: number;
 }
+
+export interface StockAnalysisInput {
+    companyName: string;
+    currentPrice: number;
+    volume: number;
+    chartImage?: string;
+    news?: string;
+    peRatio?: number;
+    eps?: number;
+    marketCap?: number;
+    dividend?: number;
+    beta?: number;
+  }
+  
+  export interface AnalysisResult {
+    technicalTrends: string;
+    volumePatterns: string;
+    supportResistance: string;
+    shortTermOutlook: string;
+    stopLoss: number;
+    text?: string | null;
+  }
