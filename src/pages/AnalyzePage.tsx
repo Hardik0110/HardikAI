@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
-import { Upload, ImageIcon, LineChart } from "lucide-react"
+import { Upload, ImageIcon, LineChart, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { analyzeChart, API_CONFIG } from "@/lib/api"
 
 export default function AnalyzePage() {
   const { toast } = useToast()
@@ -12,65 +13,79 @@ export default function AnalyzePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<string | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
+
+  const validateFile = (file: File): boolean => {
+    setFileError(null);
+    
+    // Check file size
+    if (file.size > API_CONFIG.maxImageSize) {
+      setFileError(`File is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Maximum size is ${API_CONFIG.maxImageSize / 1024 / 1024}MB.`);
+      return false;
+    }
+    
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setFileError('Invalid file type. Please upload a JPG, PNG, or GIF image.');
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setSelectedFile(file)
-
-      const reader = new FileReader()
-      reader.onload = () => {
-        setPreviewUrl(reader.result as string)
+      const file = e.target.files[0];
+      
+      if (!validateFile(file)) {
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        return;
       }
-      reader.readAsDataURL(file)
+      
+      setSelectedFile(file);
 
-      setAnalysisResult(null)
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      setAnalysisResult(null);
     }
-  }
+  };
 
-  const handleAnalyze = () => {
-    if (!selectedFile) {
+  const handleAnalyze = async () => {
+    if (!selectedFile || !previewUrl) {
       toast({
         title: "No image selected",
         description: "Please upload a stock chart image to analyze",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsAnalyzing(true)
+    setIsAnalyzing(true);
 
-    // Simulate analysis process
-    setTimeout(() => {
-      setIsAnalyzing(false)
-
-      // Mock analysis result - in a real app, this would come from an API
-      setAnalysisResult(`
-# Stock Analysis Report
-
-## Technical Indicators
-- **Moving Averages**: Bullish crossover detected (50-day MA crossing above 200-day MA)
-- **RSI**: 62.4 (Neutral with bullish momentum)
-- **MACD**: Positive and increasing (Bullish signal)
-- **Volume**: Above average by 32% (Strong buying interest)
-
-## Pattern Recognition
-- **Chart Pattern**: Cup and Handle formation detected
-- **Support Level**: $142.30
-- **Resistance Level**: $158.75
-- **Breakout Potential**: High (80% probability)
-
-## Recommendation
-STRONG BUY with a price target of $172.50 within 3 months.
-Risk management: Set stop loss at $138.50.
-      `)
+    try {
+      const result = await analyzeChart(previewUrl);
+      setAnalysisResult(result.text);
 
       toast({
         title: "Analysis complete",
         description: "Stock chart has been successfully analyzed",
-      })
-    }, 2000)
-  }
+      });
+    } catch (error) {
+      toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -108,18 +123,31 @@ Risk management: Set stop loss at $138.50.
                         <p className="text-center text-sm text-muted-foreground">
                           Click to upload or drag and drop
                           <br />
-                          PNG, JPG or GIF (max. 10MB)
+                          PNG, JPG or GIF (max. 1MB)
                         </p>
                       </>
                     )}
                   </motion.div>
 
-                  <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                  <input 
+                    id="file-upload" 
+                    type="file" 
+                    accept="image/jpeg,image/png,image/gif" 
+                    className="hidden" 
+                    onChange={handleFileChange} 
+                  />
+
+                  {fileError && (
+                    <div className="flex items-center gap-2 text-red-500 text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{fileError}</span>
+                    </div>
+                  )}
 
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full">
                     <Button
                       onClick={handleAnalyze}
-                      disabled={!selectedFile || isAnalyzing}
+                      disabled={!selectedFile || isAnalyzing || !!fileError}
                       variant="gradient"
                       className="w-full"
                     >

@@ -5,14 +5,17 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
 import { CodeOptimizeButton } from "@/components/code-optimize-button"
 import { motion } from "framer-motion"
+import { optimizeCode } from "@/lib/api"
+import { OptimizationType } from "@/lib/types"
 
 export default function OptimizePage() {
   const { toast } = useToast()
   const [code, setCode] = useState("")
   const [optimizedCode, setOptimizedCode] = useState("")
   const [isOptimizing, setIsOptimizing] = useState(false)
+  const [usedModel, setUsedModel] = useState<string | null>(null)
 
-  const handleOptimize = (optimizationType: string) => {
+  const handleOptimize = async (optimizationType: OptimizationType) => {
     if (!code.trim()) {
       toast({
         title: "No code provided",
@@ -24,27 +27,28 @@ export default function OptimizePage() {
 
     setIsOptimizing(true)
 
-    setTimeout(() => {
-      let result = code
+    try {
+      const response = await optimizeCode({
+        code,
+        optimizationType
+      })
 
-      if (optimizationType === "hooks") {
-        result = `// Optimized with Modern Hooks\n${code.replace(/class\s+Component/g, "function Component").replace(/this\.state/g, "useState")}`
-      } else if (optimizationType === "readability") {
-        result = `// Improved Readability\n${code.split(";").join(";\n")}`
-      } else if (optimizationType === "linting") {
-        result = `// Fixed Linting and Types\ntype Props = {};\n${code}`
-      } else if (optimizationType === "bugs") {
-        result = `// Fixed Bugs\n${code.replace(/console\.log/g, "// console.log")}`
-      }
-
-      setOptimizedCode(result)
-      setIsOptimizing(false)
+      setOptimizedCode(response.optimizedCode)
+      setUsedModel(response.usedModel)
 
       toast({
         title: "Code optimized",
         description: `Applied ${optimizationType} optimizations`,
       })
-    }, 1500)
+    } catch (error) {
+      toast({
+        title: "Optimization failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsOptimizing(false)
+    }
   }
 
   return (
@@ -77,7 +81,12 @@ export default function OptimizePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="mb-2 text-lg font-medium text-gradient">Optimized Code:</h2>
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-medium text-gradient">Optimized Code:</h2>
+                  {usedModel && (
+                    <span className="text-xs text-muted-foreground">Optimized with: {usedModel}</span>
+                  )}
+                </div>
                 <pre className="whitespace-pre-wrap break-all rounded-md bg-dark/5 p-4 font-mono text-sm">
                   {optimizedCode}
                 </pre>
