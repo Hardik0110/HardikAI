@@ -16,11 +16,11 @@ const cardVariants = {
 export default function DashboardPage() {
   return (
     <DashboardLayout>
-      <h2 className="text-xl sm:text-2xl font-medium mb-2 mt-6">
+        <h2 className="text-xl sm:text-2xl font-medium mb-2 mt-6">
           <span className="text-cyan">
             Choose an<span className="text-pink "> Option Below</span>
           </span>
-          </h2>
+        </h2>
       <div className="flex items-center justify-center mt-6">
         
         <div className="grid gap-8 md:grid-cols-2 justify-items-center">

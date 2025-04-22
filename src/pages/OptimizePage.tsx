@@ -24,9 +24,7 @@ export default function OptimizePage() {
 
     setIsOptimizing(true)
 
-    // Simulate optimization process
     setTimeout(() => {
-      // This is just a simple example - in a real app, you'd send the code to an API
       let result = code
 
       if (optimizationType === "hooks") {

@@ -1,5 +1,4 @@
 import type React from "react"
-
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -21,7 +20,6 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate login process
     setTimeout(() => {
       setIsLoading(false)
       toast({
