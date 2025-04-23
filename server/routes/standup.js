@@ -63,15 +63,14 @@ ${JSON.stringify(data.tasks.map(t => ({
             content: 'I will generate a standup report with the exact format, including precise time durations for all tasks and subtasks, ensuring they sum to 8 hours.'
           }
         ],
-        temperature: 0.3, // Lower temperature for more consistent formatting
+        temperature: 0.3, 
         max_tokens: 2048,
-        presence_penalty: -0.5, // Encourage following the template exactly
-        frequency_penalty: 0.3 // Encourage varied descriptions while maintaining format
+        presence_penalty: -0.5, 
+        frequency_penalty: 0.3 
       });
 
       const content = completion.choices[0].message.content.trim();
       
-      // Validate the response format
       if (!content.startsWith("Yesterday's Progress:")) {
         throw new Error('Invalid response format');
       }
@@ -87,7 +86,6 @@ ${JSON.stringify(data.tasks.map(t => ({
   }
 
   function transformResponse(parsed) {
-    // Transform and validate the response
     if (!parsed || !parsed.yesterdayProgress || !Array.isArray(parsed.yesterdayProgress.tasks)) {
       console.error('Invalid response structure:', parsed);
       return null;
@@ -119,13 +117,11 @@ ${JSON.stringify(data.tasks.map(t => ({
     try {
       const data = req.body;
       
-      // Handle raw text input
       if (typeof data === 'string' || data.rawText) {
         let standup = null;
         let usedModel = null;
         let modelErrors = [];
 
-        // Try models in sequence until one succeeds
         for (const model of AI_MODELS) {
           try {
             const result = await tryStandup(data, model);
@@ -150,7 +146,6 @@ ${JSON.stringify(data.tasks.map(t => ({
         return;
       }
       
-      // Handle structured task data
       if (!Array.isArray(data.tasks) || data.tasks.length === 0) {
         return res.status(400).json({
           error: 'Invalid request',
@@ -173,7 +168,6 @@ ${JSON.stringify(data.tasks.map(t => ({
       let usedModel = null;
       let modelErrors = [];
 
-      // Try models in sequence until one succeeds
       for (const model of AI_MODELS) {
         try {
           const result = await tryStandup(formattedData, model);
@@ -204,19 +198,16 @@ ${JSON.stringify(data.tasks.map(t => ({
     }
   });
 
-  // New endpoint for copyable formatted text
   router.post('/format', async (req, res) => {
     try {
       const data = req.body;
       
-      // Get the standup data first
       let standupData;
       
       if (typeof data === 'string' || data.rawText) {
         let standup = null;
         let usedModel = null;
         
-        // Try models in sequence
         for (const model of AI_MODELS) {
           try {
             const result = await tryStandup(data, model);
@@ -236,13 +227,11 @@ ${JSON.stringify(data.tasks.map(t => ({
         
         standupData = { ...standup, usedModel };
       } else if (data.standupData) {
-        // If standup data is provided directly
         standupData = data.standupData;
       } else {
         throw new Error('Invalid input: Provide either raw text or standup data');
       }
       
-      // Format the standup data into copyable text
       const formattedText = formatStandupForCopy(standupData);
       
       res.json({
@@ -261,7 +250,6 @@ ${JSON.stringify(data.tasks.map(t => ({
   function formatStandupForCopy(standup) {
     let result = "**Yesterday's Progress:**\n";
     
-    // Add tasks
     standup.yesterdayProgress.tasks.forEach(task => {
       result += `* **${task.name}:** (${task.duration})\n`;
       task.subTasks.forEach(subtask => {
@@ -269,19 +257,16 @@ ${JSON.stringify(data.tasks.map(t => ({
       });
     });
     
-    // Add learnings
     result += "\n**Learnings & Insights:**\n";
     standup.learningsAndInsights.forEach(item => {
       result += `* ${item.description} (${item.duration})\n`;
     });
     
-    // Add blockers
     result += "\n**Blockers:**\n";
     standup.blockers.forEach(blocker => {
       result += `* ${blocker}\n`;
     });
     
-    // Add today's plan
     result += "\n**Today's Plan:**\n";
     standup.todaysPlan.forEach(plan => {
       result += `* ${plan}\n`;
