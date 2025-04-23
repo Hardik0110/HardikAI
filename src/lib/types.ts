@@ -147,7 +147,7 @@ export interface ConvertRequest {
   conversionType: ConversionType;
 }
 
-// Add these new interfaces
+
 export interface StandupAPIResponse {
   yesterdayProgress: {
     tasks: {

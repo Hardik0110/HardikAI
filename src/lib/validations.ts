@@ -1,6 +1,5 @@
 import * as z from 'zod'
 
-// Daily Standup Validations
 export const taskSchema = z.object({
   name: z.string().min(1, 'Task name is required'),
   subTasks: z.array(z.string()),
@@ -13,7 +12,6 @@ export const standupFormSchema = z.object({
   tasks: z.array(taskSchema).min(1, 'At least one task is required')
 })
 
-// Stock Analysis Validations
 export const stockAnalysisSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   currentPrice: z.number().positive("Price must be positive"),

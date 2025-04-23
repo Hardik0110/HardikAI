@@ -20,8 +20,8 @@ export default function DashboardPage() {
 
       <DashboardLayout>
         <h2 className="relative z-10 text-xl sm:text-2xl font-medium mb-2 mt-6">
-          <span className="text-cyan">
-            Choose one of <span className="text-pink">the Options Below</span>
+          <span className="text-gradient">
+            Choose one of the Options Below
           </span>
         </h2>
         <div className="relative z-10 flex items-center justify-center mt-6">
@@ -75,7 +75,7 @@ export default function DashboardPage() {
             </motion.div>
 
             <motion.div custom={3} variants={cardVariants} initial="hidden" animate="visible">
-              <Link to="/dailystandup" className="transition-transform hover:scale-[1.02]">
+              <Link to="/standup" className="transition-transform hover:scale-[1.02]">
                 <button className="group relative w-[24rem] h-[18rem] rounded-2xl overflow-hidden border border-yellow-500">
                   <PixelCanvas
                     gap={10}

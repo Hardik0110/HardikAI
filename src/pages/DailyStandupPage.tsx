@@ -40,12 +40,13 @@ function StandupPopup({ result, onClose }: { result: { formattedText: string; us
               <h3 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
                 Daily Standup Report
               </h3>
+              
             </div>
             
             <Button 
               variant="outline" 
               size="sm"
-              className="border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300 flex items-center gap-2"
+              className="border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300 flex items-center gap-2 mr-5 mt-6"
               onClick={copyToClipboard}
             >
               {copied ? (

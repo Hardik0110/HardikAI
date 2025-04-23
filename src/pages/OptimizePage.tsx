@@ -103,7 +103,7 @@ export default function OptimizePage() {
                   {usedModel && (
                     <span className="text-xs text-gray-400">Optimized with: {usedModel}</span>
                   )}
-                  <pre className="whitespace-pre-wrap break-all rounded-md bg-gray-800 p-4 font-mono text-sm border" style={{ borderColor: ACCENT }}>
+                  <pre className="whitespace-pre-wrap break-all rounded-md dark:bg-black bg-white p-4 font-mono text-sm border border-pink/10 dark:text-gray-200 text-gray-800" style={{ borderColor: ACCENT }}>
                     {optimizedCode}
                   </pre>
                   <Button

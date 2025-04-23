@@ -120,7 +120,7 @@ export default function ConvertPage() {
         <AnimatePresence>
           {convertedCode && (
             <motion.div
-              className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+              className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 "
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -146,7 +146,7 @@ export default function ConvertPage() {
                       <span className="text-xs text-muted-foreground">Converted with: {usedModel}</span>
                     )}
                   </div>
-                  <pre className="whitespace-pre-wrap break-all rounded-md bg-gray-50 p-4 font-mono text-sm border border-pink/10">
+                  <pre className="whitespace-pre-wrap break-all rounded-md dark:bg-black bg-white p-4 font-mono text-sm border border-pink/10 dark:text-gray-200 text-gray-800">
                     {convertedCode}
                   </pre>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
