@@ -1,8 +1,8 @@
 import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { DashboardNav } from "@/components/dashboard-nav"
-import { Breadcrumbs } from "@/components/breadcrumbs"
+import { DashboardNav } from "@/components/DashboardNav"
+import { Breadcrumbs } from "@/components/BreadCrumbs"
 import { motion } from "framer-motion"
 
 interface DashboardLayoutProps {

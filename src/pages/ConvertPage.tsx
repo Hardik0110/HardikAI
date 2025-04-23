@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
-import { CodeOptimizeButton } from "@/components/code-optimize-button"
+import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
 import { motion, AnimatePresence } from "framer-motion"
 import { convertCode } from "@/lib/api"
 import { ConversionType } from "@/lib/types"
@@ -29,7 +29,6 @@ export default function ConvertPage() {
     setIsConverting(true)
 
     try {
-      // Log the request for debugging
       console.log(`Starting conversion: ${conversionType}`);
       
       const response = await convertCode({

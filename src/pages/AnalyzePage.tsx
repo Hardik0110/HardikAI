@@ -1,31 +1,18 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DashboardLayout } from "@/components/dashboard-layout";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { analyzeStock } from "@/lib/api";
 import type { StockAnalysisInput, AnalysisResult } from "@/lib/types";
-
-const formSchema = z.object({
-  companyName: z.string().min(1, "Company name is required"),
-  currentPrice: z.number().positive("Price must be positive"),
-  volume: z.number().positive("Volume must be positive"),
-  news: z.string().optional().default(""),
-  peRatio: z.number().positive().optional().nullable(),
-  eps: z.number().optional().nullable(),
-  marketCap: z.number().positive().optional().nullable(),
-  dividend: z.number().min(0).optional().nullable(),
-  beta: z.number().optional().nullable(),
-});
-
+import { stockAnalysisSchema, type StockAnalysisFormData } from '@/lib/validations';
 
 type OptionalNumberInputProps = { control: any; name: string; label: string; placeholder?: string };
 const OptionalNumberInput = ({ control, name, label, placeholder = "Optional" }: OptionalNumberInputProps) => (
@@ -37,7 +24,7 @@ const OptionalNumberInput = ({ control, name, label, placeholder = "Optional" }:
         <FormLabel>{label}</FormLabel>
         <FormControl>
           <Input
-            className="border-white"
+            className="border-b"
             type="number"
             placeholder={placeholder}
             value={field.value ?? ""}
@@ -60,7 +47,7 @@ const RequiredNumberInput = ({ control, name, label, placeholder }: RequiredNumb
         <FormLabel>{label}</FormLabel>
         <FormControl>
           <Input
-            className="border-white"
+            className="border-b"
             type="number"
             placeholder={placeholder}
             value={field.value}
@@ -83,9 +70,9 @@ const TextInput = ({ control, name, label, placeholder, isTextarea = false }: Te
         <FormLabel>{label}</FormLabel>
         <FormControl>
           {isTextarea ? (
-            <Textarea className="border-white" placeholder={placeholder} {...field} />
+            <Textarea className="border-b" placeholder={placeholder} {...field} />
           ) : (
-            <Input className="border-white" placeholder={placeholder} {...field} />
+            <Input className="border-b" placeholder={placeholder} {...field} />
           )}
         </FormControl>
         <FormMessage />
@@ -135,14 +122,13 @@ const AnalysisPopup = ({ analysisResult, onClose }: AnalysisPopupProps) => (
   </motion.div>
 );
 
-// **Main Component**
 export default function AnalyzePage() {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<StockAnalysisFormData>({
+    resolver: zodResolver(stockAnalysisSchema),
     defaultValues: {
       companyName: "",
       currentPrice: 0,
@@ -156,7 +142,7 @@ export default function AnalyzePage() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: StockAnalysisFormData) => {
     setIsAnalyzing(true);
     try {
       const cleanData: StockAnalysisInput = {

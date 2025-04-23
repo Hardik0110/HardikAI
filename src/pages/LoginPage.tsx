@@ -53,7 +53,7 @@ export default function LoginPage() {
         <Card className="border-cyan/20 shadow-lg shadow-cyan/5">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-gradient">Login</CardTitle>
-            <CardDescription className="text-white ">Enter your credentials to access your account</CardDescription>
+            <CardDescription >Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">

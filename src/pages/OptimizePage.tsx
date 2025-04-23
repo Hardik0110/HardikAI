@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
-import { CodeOptimizeButton } from "@/components/code-optimize-button"
+import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
 import { motion, AnimatePresence } from "framer-motion"
 import { optimizeCode } from "@/lib/api"
 import { OptimizationType } from "@/lib/types"
@@ -129,7 +129,7 @@ export default function OptimizePage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto relative"
+                className="bg-black rounded-lg shadow-xl p-6 max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto relative"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
@@ -146,10 +146,10 @@ export default function OptimizePage() {
                   <div className="flex justify-between items-center mb-2">
                     <h2 className="text-lg font-medium text-gradient">Optimized Code:</h2>
                     {usedModel && (
-                      <span className="text-xs text-muted-foreground">Optimized with: {usedModel}</span>
+                      <span className="text-xs text-muted-foreground text-white">Optimized with: {usedModel}</span>
                     )}
                   </div>
-                  <pre className="whitespace-pre-wrap break-all rounded-md bg-gray-50 p-4 font-mono text-sm border border-pink/10">
+                  <pre className="whitespace-pre-wrap break-all rounded-md bg-gray-500 p-4 font-mono text-sm border border-pink/10">
                     {optimizedCode}
                   </pre>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

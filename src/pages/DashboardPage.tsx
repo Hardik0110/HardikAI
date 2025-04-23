@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { CodeIcon, LineChart, FileCode, Speech } from "lucide-react" 
 import { motion } from "framer-motion"
 import { PixelCanvas } from "@/components/ui/pixel-canvas"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/DashboardLayout"
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },

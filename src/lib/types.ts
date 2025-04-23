@@ -100,7 +100,13 @@ export interface Task {
 }
 
 export interface StandupFormData {
-  tasks: Task[];
+  tasks: Array<{
+    name: string;
+    subTasks: string[];
+    hours: number;
+    minutes: number;
+    blockers?: string;
+  }>;
 }
 
 export interface StandupResult {
@@ -120,4 +126,60 @@ export interface StandupResult {
   }>;
   blockers: string[];
   todaysPlan: string[];
+  usedModel?: string;
+}
+
+export interface OptimizeResponse {
+  optimizedCode: string;
+  usedModel: string;
+}
+
+export interface AnalyzeResponse {
+  analysisResult: string;
+  usedModel: string;
+  technicalTrends: string;
+  volumePatterns: string;
+  supportResistance: string;
+  shortTermOutlook: string;
+  stopLoss: number;
+}
+
+export interface ConversionResponse {
+  convertedCode: string;
+  usedModel: string;
+}
+
+export interface OptimizeRequest {
+  code: string;
+  optimizationType: "hooks" | "readability" | "linting" | "bugs";
+}
+
+export interface ConvertRequest {
+  code: string;
+  conversionType: ConversionType;
+}
+
+// Add these new interfaces
+export interface StandupAPIResponse {
+  yesterdayProgress: {
+    tasks: {
+      name: string;
+      duration: string;
+      subTasks?: Array<{
+        description: string;
+        duration: string;
+      }>;
+    }[];
+  };
+  learningsAndInsights?: Array<{
+    description: string;
+    duration: string;
+  }>;
+  blockers?: string[];
+  todaysPlan?: string[];
+  usedModel: string;
+}
+
+export interface StandupFormattedResponse extends StandupResult {
+  usedModel: string;
 }

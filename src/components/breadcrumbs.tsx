@@ -35,14 +35,14 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
       <ol className="flex items-center space-x-2">
         {items.map((item, index) => (
           <li key={item.href} className="flex items-center">
-            {index > 0 && <ChevronRight className="mx-1 h-4 w-4 text-muted-foreground text-white" />}
+            {index > 0 && <ChevronRight className="mx-1 h-4 w-4 text-muted-foreground " />}
 
             {index === items.length - 1 ? (
               <span className="font-medium text-foreground">{item.label}</span>
             ) : (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link to={item.href} className="text-muted-foreground hover:text-primary transition-colors">
-                  {index === 0 ? <Home className="h-4 w-4 text-white" /> : item.label}
+                  {index === 0 ? <Home className="h-4 w-4" /> : item.label}
                 </Link>
               </motion.div>
             )}
