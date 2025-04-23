@@ -26,7 +26,7 @@ const navItems = [
     icon: FileCode,
   },
   {
-    path: "/dailystandup",
+    path: "/standup",
     label: "DailyStandup",
     icon: Speech,
   }

@@ -4,15 +4,38 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { generateStandup } from '@/lib/api'
+import { generateStandup, getFormattedStandup } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { TaskSection } from '@/components/TaskSection'
 import { StandupResult } from '@/lib/types'
-import { X, ClipboardList } from 'lucide-react'
+import { X, ClipboardList, Copy, CheckCircle, FileText } from 'lucide-react'
 import { DashboardLayout } from '@/components/DashboardLayout'
 import { standupFormSchema, type StandupFormData } from '@/lib/validations'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 
 function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+  const [formattedText, setFormattedText] = useState<string | null>(null)
+
+  const copyToClipboard = async () => {
+    try {
+      // Get formatted text if we don't have it yet
+      if (!formattedText) {
+        const formatted = await getFormattedStandup(result)
+        setFormattedText(formatted.formattedText)
+        await navigator.clipboard.writeText(formatted.formattedText)
+      } else {
+        await navigator.clipboard.writeText(formattedText)
+      }
+      
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
+  }
+
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
@@ -35,11 +58,32 @@ function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () 
         </button>
 
         <div className="space-y-8">
-          <div className="flex items-center gap-3">
-            <ClipboardList className="h-6 w-6 text-yellow-400" />
-            <h3 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
-              Daily Standup Report
-            </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="h-6 w-6 text-yellow-400" />
+              <h3 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
+                Daily Standup Report
+              </h3>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300 flex items-center gap-2"
+              onClick={copyToClipboard}
+            >
+              {copied ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  Copy Report
+                </>
+              )}
+            </Button>
           </div>
 
           <div className="space-y-6">
@@ -107,6 +151,7 @@ export default function DailyStandupPage() {
   const { toast } = useToast()
   const [standupResult, setStandupResult] = useState<StandupResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [rawText, setRawText] = useState('')
 
   const form = useForm<StandupFormData>({
     resolver: zodResolver(standupFormSchema),
@@ -150,6 +195,35 @@ export default function DailyStandupPage() {
     }
   }
 
+  const onTextSubmit = async () => {
+    if (!rawText.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter your standup details',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const result = await generateStandup(rawText)
+      setStandupResult(result)
+      toast({
+        title: 'Standup generated',
+        description: 'Your daily standup is ready!'
+      })
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Failed to generate standup',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <DashboardLayout>
       <motion.div className="container mx-auto py-8 px-4">
@@ -162,32 +236,65 @@ export default function DailyStandupPage() {
           Daily Standup Generator
         </motion.h1>
 
-        <FormProvider {...form}>
-          <Card className="max-w-2xl  mx-auto border-yellow-400/20 shadow-lg bg-black/40">
-            <CardContent className="p-8 space-y-6">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {fields.map((f, idx) => <TaskSection key={f.id} index={idx} />)}
+        <Card className="max-w-2xl mx-auto border-yellow-400/20 shadow-lg bg-black/40">
+          <CardContent className="p-8 space-y-6">
+            <Tabs defaultValue="text" className="w-full">
+              <TabsList className="grid grid-cols-2 mb-6">
+                <TabsTrigger value="text">Quick Text Entry</TabsTrigger>
+                <TabsTrigger value="detailed">Detailed Form</TabsTrigger>
+              </TabsList>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300"
-                  onClick={() => append({ name: '', subTasks: [''], hours: 0, minutes: 0, blockers: '' })}
-                >
-                  Add Another Task
-                </Button>
+              <TabsContent value="text" className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-yellow-400">
+                    <FileText className="h-5 w-5" />
+                    <h3 className="font-medium">Simply describe your work</h3>
+                  </div>
+                  
+                  <Textarea 
+                    className="min-h-40 bg-black/40 border-yellow-400/30 focus:border-yellow-400/60"
+                    placeholder="Describe what you worked on yesterday, how long it took, any blockers, and what you plan to do today. Our AI will structure it for you."
+                    value={rawText}
+                    onChange={(e) => setRawText(e.target.value)}
+                  />
+                  
+                  <Button 
+                    onClick={onTextSubmit}
+                    disabled={isLoading || !rawText.trim()} 
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium disabled:bg-yellow-500/50"
+                  >
+                    {isLoading ? 'Generating Report...' : 'Generate Standup Report'}
+                  </Button>
+                </div>
+              </TabsContent>
 
-                <Button 
-                  type="submit" 
-                  disabled={isLoading} 
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium disabled:bg-yellow-500/50"
-                >
-                  {isLoading ? 'Generating Report...' : 'Generate Standup Report'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </FormProvider>
+              <TabsContent value="detailed">
+                <FormProvider {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {fields.map((f, idx) => <TaskSection key={f.id} index={idx} />)}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300"
+                      onClick={() => append({ name: '', subTasks: [''], hours: 0, minutes: 0, blockers: '' })}
+                    >
+                      Add Another Task
+                    </Button>
+
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading} 
+                      className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium disabled:bg-yellow-500/50"
+                    >
+                      {isLoading ? 'Generating Report...' : 'Generate Standup Report'}
+                    </Button>
+                  </form>
+                </FormProvider>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
         <AnimatePresence>
           {standupResult && (

@@ -11,23 +11,18 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   const location = useLocation()
   const pathname = location.pathname
 
-  // Skip rendering breadcrumbs on the home page
   if (pathname === "/") return null
 
-  // Generate breadcrumb items based on the current path
   const pathSegments = pathname.split("/").filter(Boolean)
 
-  // Create breadcrumb items with proper labels
   const breadcrumbItems = pathSegments.map((segment, index) => {
     const href = `/${pathSegments.slice(0, index + 1).join("/")}`
 
-    // Format the segment for display (capitalize first letter)
     const label = segment.charAt(0).toUpperCase() + segment.slice(1)
 
     return { href, label }
   })
 
-  // Add home as the first item
   const items = [{ href: "/", label: "Home" }, ...breadcrumbItems]
 
   return (

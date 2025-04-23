@@ -26,6 +26,12 @@ export const stockAnalysisSchema = z.object({
   beta: z.number().optional().nullable(),
 })
 
+export const standupTextSchema = z.object({
+    rawText: z.string().min(10, 'Please provide more details about your work')
+  })
+  
+  export type StandupTextData = z.infer<typeof standupTextSchema>
+
 // Types derived from schemas
 export type TaskFormData = z.infer<typeof taskSchema>
 export type StandupFormData = z.infer<typeof standupFormSchema>

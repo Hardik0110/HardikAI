@@ -22,7 +22,7 @@ function App() {
           <Route path="/optimize" element={<OptimizePage />} />
           <Route path="/analyze" element={<AnalyzePage />} />
           <Route path="/convert" element={<ConvertPage />} />
-          <Route path="/dailystandup" element={<DailyStandupPage />} />
+          <Route path="/standup" element={<DailyStandupPage />} />
         </Routes>
       </AnimatePresence>
       <Toaster />

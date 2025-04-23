@@ -180,6 +180,15 @@ export interface StandupAPIResponse {
   usedModel: string;
 }
 
+export interface StandupFormattedTextResponse {
+  formattedText: string;
+  standupData: StandupFormattedResponse;
+}
+
 export interface StandupFormattedResponse extends StandupResult {
   usedModel: string;
+}
+
+export interface StandupTextInput {
+  rawText: string;
 }

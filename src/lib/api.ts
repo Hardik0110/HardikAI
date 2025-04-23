@@ -63,7 +63,6 @@ export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisRe
 
     const responseData = await response.json();
     
-    // Validate the response data
     if (!responseData.technicalTrends || !responseData.volumePatterns || 
         !responseData.supportResistance || !responseData.shortTermOutlook || 
         typeof responseData.stopLoss !== 'number') {
@@ -96,7 +95,6 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
       body: JSON.stringify(request),
     });
 
-    // Check if the response is ok
     if (!response.ok) {
       console.error('Convert API error status:', response.status);
       let errorMessage = 'Failed to convert code';
@@ -105,18 +103,15 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
         const errorData = await response.json();
         errorMessage = errorData.details || errorMessage;
       } catch (jsonError) {
-        // If we can't parse the error as JSON, use the default message
         console.error('Error parsing error response:', jsonError);
       }
       
       throw new Error(errorMessage);
     }
 
-    // Try to parse the response as JSON
     try {
       const data = await response.json();
       
-      // Validate the response has the expected structure
       if (!data || !data.convertedCode || typeof data.convertedCode !== 'string') {
         console.error('Invalid conversion response:', data);
         throw new Error('Invalid conversion response format');
@@ -136,20 +131,22 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
   }
 }
 
-export async function generateStandup(data: StandupFormData): Promise<StandupResult> {
+export async function generateStandup(data: StandupFormData | string): Promise<StandupResult> {
   try {
     const response = await fetch(`${API_CONFIG.baseURL}/standup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        tasks: data.tasks.map(task => ({
-          ...task,
-          subTasks: task.subTasks.filter(st => st.trim()),
-          blockers: task.blockers?.trim() || 'No major blockers'
-        }))
-      }),
+      body: typeof data === 'string' 
+        ? JSON.stringify({ rawText: data }) 
+        : JSON.stringify({
+            tasks: data.tasks.map(task => ({
+              ...task,
+              subTasks: task.subTasks.filter(st => st.trim()),
+              blockers: task.blockers?.trim() || 'No major blockers'
+            }))
+          }),
     });
 
     if (!response.ok) {
@@ -187,6 +184,30 @@ export async function generateStandup(data: StandupFormData): Promise<StandupRes
     };
 
     return formattedResponse;
+  } catch (error) {
+    console.error('API error:', error);
+    throw error;
+  }
+}
+
+export async function getFormattedStandup(data: StandupResult | string): Promise<{ formattedText: string; standupData: StandupResult }> {
+  try {
+    const response = await fetch(`${API_CONFIG.baseURL}/standup/format`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: typeof data === 'string'
+        ? JSON.stringify({ rawText: data })
+        : JSON.stringify({ standupData: data }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || 'Failed to format standup');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('API error:', error);
     throw error;
