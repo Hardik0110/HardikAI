@@ -6,7 +6,8 @@ import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import OptimizePage from "@/pages/OptimizePage"
 import AnalyzePage from "@/pages/AnalyzePage"
-import ConvertPage from "@/pages/ConvertPage" 
+import ConvertPage from "@/pages/ConvertPage"
+import DailyStandupPage from "@/pages/DailyStandupPage"
 
 function App() {
   const location = useLocation()
@@ -20,7 +21,8 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/optimize" element={<OptimizePage />} />
           <Route path="/analyze" element={<AnalyzePage />} />
-          <Route path="/convert" element={<ConvertPage />} /> {/* Add this route */}
+          <Route path="/convert" element={<ConvertPage />} />
+          <Route path="/dailystandup" element={<DailyStandupPage />} />
         </Routes>
       </AnimatePresence>
       <Toaster />

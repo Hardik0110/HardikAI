@@ -1,4 +1,4 @@
-import { AnalysisResult, StockAnalysisInput, ConversionType } from "./types";
+import { AnalysisResult, StockAnalysisInput, ConversionType, StandupFormData, StandupResult } from "./types";
 
 export const API_CONFIG = {
   baseURL: "http://localhost:3001/v1",
@@ -153,6 +153,28 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
       console.error('JSON parse error:', parseError);
       throw new Error('Error parsing conversion response');
     }
+  } catch (error) {
+    console.error('API error:', error);
+    throw error;
+  }
+}
+
+export async function generateStandup(data: StandupFormData): Promise<StandupResult> {
+  try {
+    const response = await fetch(`${API_CONFIG.baseURL}/standup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || 'Failed to generate standup');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('API error:', error);
     throw error;

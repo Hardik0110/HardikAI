@@ -91,3 +91,33 @@ export interface ConvertRequest {
   code: string;
   conversionType: ConversionType;
 }
+
+export interface Task {
+  name: string;
+  subTasks: string[];
+  hours: number;
+  minutes: number;
+}
+
+export interface StandupFormData {
+  tasks: Task[];
+}
+
+export interface StandupResult {
+  yesterdayProgress: {
+    tasks: Array<{
+      name: string;
+      duration: string;
+      subTasks: Array<{
+        description: string;
+        duration: string;
+      }>;
+    }>;
+  };
+  learningsAndInsights: Array<{
+    description: string;
+    duration: string;
+  }>;
+  blockers: string[];
+  todaysPlan: string[];
+}
