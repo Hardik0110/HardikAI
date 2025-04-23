@@ -46,11 +46,14 @@ export type OptimizationType = "hooks" | "readability" | "linting" | "bugs";
 
 export interface CodeOptimizeButtonProps {
   onClick: () => void;
-  isLoading: boolean;
-  icon: string;
-  label: string;
-  description: string;
-  index: number;
+    isLoading: boolean
+    icon: string
+    label: string
+    description: string
+    index: number
+    className?: string
+    style?: React.CSSProperties
+  
 }
 
 export interface StockAnalysisInput {
@@ -109,24 +112,9 @@ export interface StandupFormData {
   }>;
 }
 
-export interface StandupResult {
-  yesterdayProgress: {
-    tasks: Array<{
-      name: string;
-      duration: string;
-      subTasks: Array<{
-        description: string;
-        duration: string;
-      }>;
-    }>;
-  };
-  learningsAndInsights: Array<{
-    description: string;
-    duration: string;
-  }>;
-  blockers: string[];
-  todaysPlan: string[];
-  usedModel?: string;
+export type StandupResult = {
+  formattedText: string;
+  usedModel: string;
 }
 
 export interface OptimizeResponse {

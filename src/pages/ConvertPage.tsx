@@ -9,6 +9,8 @@ import { convertCode } from "@/lib/api"
 import { ConversionType } from "@/lib/types"
 import { X } from "lucide-react"
 
+const ACCENT = "#9333EA"
+
 export default function ConvertPage() {
   const { toast } = useToast()
   const [code, setCode] = useState("")
@@ -67,7 +69,12 @@ export default function ConvertPage() {
     <DashboardLayout>
       <div className="container mx-auto py-6">
         <motion.h1
-          className="mb-6 text-3xl font-bold text-gradient"
+          className="mb-6 text-3xl font-bold"
+          style={{
+            background: `linear-gradient(to right, ${ACCENT}, #C084FC)`,
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -80,7 +87,8 @@ export default function ConvertPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <Textarea
                 placeholder="Paste your code here..."
-                className="min-h-[600px] font-mono border-cyan/20 focus:border-cyan focus:ring-cyan"
+                className="min-h-[600px] font-mono border-b"
+                style={{ borderColor: ACCENT }}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
@@ -88,59 +96,24 @@ export default function ConvertPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <CodeOptimizeButton
-              onClick={() => handleConvert("javascript-to-typescript")}
-              isLoading={isConverting}
-              icon="FileText"
-              label="Convert to TypeScript"
-              description="Convert JavaScript code to TypeScript with types"
-              index={0}
-            />
-
-            <CodeOptimizeButton
-              onClick={() => handleConvert("typescript-to-python")}
-              isLoading={isConverting}
-              icon="FileText"
-              label="Convert to Python"
-              description="Convert TypeScript/JavaScript to Python"
-              index={1}
-            />
-
-            <CodeOptimizeButton
-              onClick={() => handleConvert("python-to-javascript")}
-              isLoading={isConverting}
-              icon="FileText"
-              label="Convert to JavaScript"
-              description="Convert Python code to JavaScript"
-              index={2}
-            />
-
-            <CodeOptimizeButton
-              onClick={() => handleConvert("react-to-vue")}
-              isLoading={isConverting}
-              icon="Component"
-              label="React to Vue"
-              description="Convert React components to Vue components"
-              index={3}
-            />
-
-            <CodeOptimizeButton
-              onClick={() => handleConvert("vue-to-react")}
-              isLoading={isConverting}
-              icon="Component"
-              label="Vue to React"
-              description="Convert Vue components to React components"
-              index={4}
-            />
-
-            <CodeOptimizeButton
-              onClick={() => handleConvert("javascript-to-java")}
-              isLoading={isConverting}
-              icon="FileText"
-              label="Convert to Java"
-              description="Convert JavaScript code to Java"
-              index={5}
-            />
+            {( [
+                "javascript-to-typescript",
+                "typescript-to-python",
+                "python-to-javascript",
+                "react-to-vue",
+                "vue-to-react",
+                "javascript-to-java",
+              ] as ConversionType[] ).map((ct, i) => (
+              <CodeOptimizeButton
+                key={ct}
+                onClick={() => handleConvert(ct)}
+                isLoading={isConverting}
+                icon="FileText"
+                label={ct.replace(/-/g, " ").toUpperCase()}
+                description={`Convert via ${ct}`}
+                index={i}
+              />
+            ))}
           </div>
         </div>
 

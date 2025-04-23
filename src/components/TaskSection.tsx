@@ -1,4 +1,4 @@
-import { useFormContext, useFieldArray, Controller } from 'react-hook-form'
+import { useFormContext, useFieldArray } from 'react-hook-form'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 
 interface TaskSectionProps {

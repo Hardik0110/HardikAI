@@ -7,8 +7,6 @@ import {
   ConversionResponse, 
   OptimizeRequest, 
   ConvertRequest,
-  StandupAPIResponse,
-  StandupFormattedResponse
 } from "./types";
 
 export const API_CONFIG = {
@@ -131,7 +129,7 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
   }
 }
 
-export async function generateStandup(data: StandupFormData | string): Promise<StandupResult> {
+export async function generateStandup(data: StandupFormData | string): Promise<{ formattedText: string; usedModel: string }> {
   try {
     const response = await fetch(`${API_CONFIG.baseURL}/standup`, {
       method: 'POST',
@@ -154,36 +152,7 @@ export async function generateStandup(data: StandupFormData | string): Promise<S
       throw new Error(errorData.details || 'Failed to generate standup');
     }
 
-    const result = await response.json() as StandupAPIResponse;
-
-    if (!result.yesterdayProgress?.tasks?.length) {
-      throw new Error('Invalid standup response: No tasks found');
-    }
-
-    // Format and validate the response
-    const formattedResponse: StandupFormattedResponse = {
-      yesterdayProgress: {
-        tasks: result.yesterdayProgress.tasks.map(task => ({
-          name: String(task.name || ''),
-          duration: String(task.duration || '0h'),
-          subTasks: (task.subTasks || []).map(st => ({
-            description: String(st.description || ''),
-            duration: String(st.duration || '0h')
-          }))
-        }))
-      },
-      learningsAndInsights: (result.learningsAndInsights || []).map(item => ({
-        description: String(item.description || ''),
-        duration: String(item.duration || '0h')
-      })),
-      blockers: result.blockers?.length ? 
-        result.blockers.map(String) : 
-        ['No major blockers'],
-      todaysPlan: (result.todaysPlan || []).map(String),
-      usedModel: result.usedModel || 'unknown'
-    };
-
-    return formattedResponse;
+    return await response.json();
   } catch (error) {
     console.error('API error:', error);
     throw error;

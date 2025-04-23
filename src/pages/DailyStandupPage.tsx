@@ -1,55 +1,31 @@
 import { useState } from 'react'
-import { useForm, FormProvider, useFieldArray } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
-import { generateStandup, getFormattedStandup } from '@/lib/api'
+import { generateStandup } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
-import { TaskSection } from '@/components/TaskSection'
 import { StandupResult } from '@/lib/types'
 import { X, ClipboardList, Copy, CheckCircle, FileText } from 'lucide-react'
 import { DashboardLayout } from '@/components/DashboardLayout'
-import { standupFormSchema, type StandupFormData } from '@/lib/validations'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 
-function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () => void }) {
-  const [copied, setCopied] = useState(false)
-  const [formattedText, setFormattedText] = useState<string | null>(null)
+function StandupPopup({ result, onClose }: { result: { formattedText: string; usedModel: string }; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
     try {
-      // Get formatted text if we don't have it yet
-      if (!formattedText) {
-        const formatted = await getFormattedStandup(result)
-        setFormattedText(formatted.formattedText)
-        await navigator.clipboard.writeText(formatted.formattedText)
-      } else {
-        await navigator.clipboard.writeText(formattedText)
-      }
-      
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(result.formattedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error)
+      console.error('Failed to copy:', error);
     }
-  }
+  };
 
   return (
-    <motion.div
-      className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        className="bg-black/80 rounded-lg shadow-xl p-8 max-w-3xl w-full m-4 max-h-[85vh] overflow-y-auto relative border border-yellow-400/20"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+    <motion.div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+      <motion.div className="bg-black/80 rounded-lg shadow-xl p-8 max-w-3xl w-full m-4 max-h-[85vh] overflow-y-auto relative border border-yellow-400/20">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-yellow-400 transition-colors"
@@ -86,53 +62,10 @@ function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () 
             </Button>
           </div>
 
-          <div className="space-y-6">
-            <section className="rounded-lg bg-black/40 p-6 border border-yellow-400/30 hover:border-yellow-400/50 transition-colors">
-              <h4 className="font-medium mb-4 text-lg text-yellow-400">Yesterday's Progress</h4>
-              {result.yesterdayProgress.tasks.map((task, idx) => (
-                <div key={idx} className="mb-6 last:mb-0">
-                  <p className="text-base mb-2 text-yellow-100">
-                    {task.name} <span className="font-medium text-yellow-400">({task.duration})</span>
-                  </p>
-                  <ul className="list-disc list-inside space-y-2 ml-4">
-                    {task.subTasks.map((st, i2) => (
-                      <li key={i2} className="text-sm text-gray-300 leading-relaxed">
-                        {st.description} <span className="text-yellow-400/80 italic">({st.duration})</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </section>
-
-            <section className="rounded-lg bg-black/40 p-6 border border-yellow-400/30 hover:border-yellow-400/50 transition-colors">
-              <h4 className="font-medium mb-4 text-lg text-yellow-400">Learnings & Insights</h4>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                {result.learningsAndInsights.map((item, idx) => (
-                  <li key={idx} className="text-sm text-gray-300 leading-relaxed">
-                    {item.description} <span className="text-yellow-400/80 italic">({item.duration})</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="rounded-lg bg-black/40 p-6 border border-yellow-400/30 hover:border-yellow-400/50 transition-colors">
-              <h4 className="font-medium mb-4 text-lg text-yellow-400">Blockers</h4>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                {result.blockers.map((blk, idx) => (
-                  <li key={idx} className="text-sm text-gray-300 leading-relaxed">{blk}</li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="rounded-lg bg-black/40 p-6 border border-yellow-400/30 hover:border-yellow-400/50 transition-colors">
-              <h4 className="font-medium mb-4 text-lg text-yellow-400">Today's Plan</h4>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                {result.todaysPlan.map((plan, idx) => (
-                  <li key={idx} className="text-sm text-gray-300 leading-relaxed">{plan}</li>
-                ))}
-              </ul>
-            </section>
+          <div className="prose prose-invert max-w-none">
+            <pre className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed">
+              {result.formattedText}
+            </pre>
           </div>
 
           <Button 
@@ -144,7 +77,7 @@ function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () 
         </div>
       </motion.div>
     </motion.div>
-  )
+  );
 }
 
 export default function DailyStandupPage() {
@@ -153,47 +86,7 @@ export default function DailyStandupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [rawText, setRawText] = useState('')
 
-  const form = useForm<StandupFormData>({
-    resolver: zodResolver(standupFormSchema),
-    defaultValues: { 
-      tasks: [{ 
-        name: '', 
-        subTasks: [''], 
-        hours: 0, 
-        minutes: 0, 
-        blockers: '' 
-      }] 
-    }
-  })
-  
-  const { fields, append } = useFieldArray({ 
-    name: 'tasks', 
-    control: form.control 
-  })
 
-  const onSubmit = async (data: StandupFormData) => {
-    setIsLoading(true)
-    try {
-      const cleaned = data.tasks.map(t => ({ 
-        ...t, 
-        blockers: t.blockers.trim() || 'No major blockers' 
-      }))
-      const result = await generateStandup({ tasks: cleaned })
-      setStandupResult(result)
-      toast({ 
-        title: 'Standup generated', 
-        description: 'Your daily standup is ready!' 
-      })
-    } catch (e) {
-      toast({ 
-        title: 'Error', 
-        description: 'Failed to generate standup', 
-        variant: 'destructive' 
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const onTextSubmit = async () => {
     if (!rawText.trim()) {
@@ -241,7 +134,7 @@ export default function DailyStandupPage() {
             <Tabs defaultValue="text" className="w-full">
               <TabsList className="grid grid-cols-2 mb-6">
                 <TabsTrigger value="text">Quick Text Entry</TabsTrigger>
-                <TabsTrigger value="detailed">Detailed Form</TabsTrigger>
+                <TabsTrigger value="detailed">Detailed Form Will be added soon!!</TabsTrigger>
               </TabsList>
 
               <TabsContent value="text" className="space-y-6">
@@ -252,7 +145,7 @@ export default function DailyStandupPage() {
                   </div>
                   
                   <Textarea 
-                    className="min-h-40 bg-black/40 border-yellow-400/30 focus:border-yellow-400/60"
+                    className="min-h-40 bg-black/40 text-white border-yellow-400/30 focus:border-yellow-400/60"
                     placeholder="Describe what you worked on yesterday, how long it took, any blockers, and what you plan to do today. Our AI will structure it for you."
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
@@ -266,31 +159,6 @@ export default function DailyStandupPage() {
                     {isLoading ? 'Generating Report...' : 'Generate Standup Report'}
                   </Button>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="detailed">
-                <FormProvider {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {fields.map((f, idx) => <TaskSection key={f.id} index={idx} />)}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-yellow-300"
-                      onClick={() => append({ name: '', subTasks: [''], hours: 0, minutes: 0, blockers: '' })}
-                    >
-                      Add Another Task
-                    </Button>
-
-                    <Button 
-                      type="submit" 
-                      disabled={isLoading} 
-                      className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium disabled:bg-yellow-500/50"
-                    >
-                      {isLoading ? 'Generating Report...' : 'Generate Standup Report'}
-                    </Button>
-                  </form>
-                </FormProvider>
               </TabsContent>
             </Tabs>
           </CardContent>

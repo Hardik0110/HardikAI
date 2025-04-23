@@ -48,7 +48,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "express": "^5.1.0",
-    "framer-motion": "latest",
+    "framer-motion": "^12.7.5",
     "input-otp": "1.4.1",
     "jiti": "latest",
     "less": "latest",

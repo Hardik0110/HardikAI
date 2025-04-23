@@ -1,119 +1,85 @@
-// server/routes/standup.js
 import { Router } from 'express';
 
 export default function (openai, AI_MODELS) {
   const router = Router();
 
   async function tryStandup(data, model) {
-    const system = `You are a daily standup report generator. Create a detailed standup report following this structure:
-{
-  "yesterdayProgress": {
-    "tasks": [
-      {
-        "name": "Major Task Category (e.g., Frontend Development)",
-        "duration": "Total time in Xh format",
-        "subTasks": [
-          {
-            "description": "Detailed technical work done with specifics",
-            "duration": "Time spent in Xh format"
-          }
-        ]
-      }
-    ]
-  },
-  "learningsAndInsights": [
-    {
-      "description": "Technical insight or learning from the work",
-      "duration": "Time spent learning in Xh format"
-    }
-  ],
-  "blockers": [
-    "Specific blocking issues or 'No major blockers'"
-  ],
-  "todaysPlan": [
-    "Concrete next steps with technical details"
-  ]
-}
+    const system = `You are a daily standup report generator. Follow this EXACT format with NO additional headers or sections:
 
-Rules:
-1. Group related tasks under meaningful categories
-2. Include actual technical details from the input
-3. Break down tasks over 2 hours into subtasks
-4. All durations must be in Xh format (e.g., 2.5h)
-5. Generate specific learnings based on the work done
-6. Create actionable next steps for today's plan
-7. Use the provided blockers or default to "No major blockers"`;
+Yesterday's Progress:
+{List tasks with exact time durations in (Xh Ym) format}
+- Each main task should include total time
+- Break down tasks over 2 hours into subtasks
+- Include ticket numbers where applicable
+- Each subtask must show its duration
+
+Example format:
+Yesterday's Progress:
+Frontend Development (4h 30m)
+- Implemented user authentication flow (2h 15m)
+  - Login component setup (1h)
+  - Token management integration (45m)
+  - Testing and fixes (30m)
+- Dashboard layout creation (2h 15m)
+
+Learnings & Insights:
+- {Each learning point with time spent on it}
+- Example: Improved understanding of React Context API (30m)
+
+Blockers:
+- {List any blocking issues or "No major blockers"}
+- Must be specific technical issues if any
+
+Today's Plan:
+- {List specific tasks planned, with technical details}
+- Include estimated time for each task
+
+DO NOT add any other sections, dates, or formatting.`;
 
     try {
-      // Format input data for better prompting
-      let formattedTasks;
+      const userPrompt = typeof data === 'string' || data.rawText
+        ? `Convert this into a standup report following the format exactly: ${data.rawText || data}`
+        : `Generate a standup report from these tasks, ensuring all timings add up to 8 hours total:
+${JSON.stringify(data.tasks.map(t => ({
+  name: t.name,
+  duration: `${t.hours}h ${t.minutes}m`,
+  subTasks: t.subTasks,
+  blockers: t.blockers
+})), null, 2)}`;
+
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: [
+          { 
+            role: 'system', 
+            content: system 
+          },
+          { 
+            role: 'user', 
+            content: userPrompt 
+          },
+          {
+            role: 'assistant',
+            content: 'I will generate a standup report with the exact format, including precise time durations for all tasks and subtasks, ensuring they sum to 8 hours.'
+          }
+        ],
+        temperature: 0.3, // Lower temperature for more consistent formatting
+        max_tokens: 2048,
+        presence_penalty: -0.5, // Encourage following the template exactly
+        frequency_penalty: 0.3 // Encourage varied descriptions while maintaining format
+      });
+
+      const content = completion.choices[0].message.content.trim();
       
-      // Check if we're dealing with a simple text input
-      if (typeof data === 'string' || data.rawText) {
-        const rawText = data.rawText || data;
-        // Process raw text input
-        const userPrompt = `Generate a detailed standup report from this text description:
-${rawText}
-
-Requirements:
-1. Extract task names and durations from the text
-2. Break down tasks into meaningful subtasks
-3. Include technical specifics in descriptions
-4. Estimate proper time allocations based on context
-5. Generate relevant learnings from the work described
-6. Create specific next steps based on current progress`;
-
-        const completion = await openai.chat.completions.create({
-          model,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.4,
-          max_tokens: 2048,
-          response_format: { type: 'json_object' }
-        });
-
-        const content = completion.choices[0].message.content.trim();
-        const parsed = JSON.parse(content);
-
-        return transformResponse(parsed);
-      } else {
-        // Process structured task data
-        formattedTasks = data.tasks.map(task => ({
-          name: task.name,
-          timeSpent: `${task.hours}h ${task.minutes}m`,
-          details: task.subTasks.filter(st => st.trim()),
-          blockers: task.blockers?.trim() || 'No major blockers'
-        }));
-
-        const userPrompt = `Generate a detailed standup report for these tasks:
-${JSON.stringify(formattedTasks, null, 2)}
-
-Requirements:
-1. Use the actual task names and timings provided
-2. Break down tasks into meaningful subtasks
-3. Include technical specifics in descriptions
-4. Calculate proper time allocations
-5. Generate relevant learnings from the work
-6. Create specific next steps based on current progress`;
-
-        const completion = await openai.chat.completions.create({
-          model,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.4,
-          max_tokens: 2048,
-          response_format: { type: 'json_object' }
-        });
-
-        const content = completion.choices[0].message.content.trim();
-        const parsed = JSON.parse(content);
-
-        return transformResponse(parsed);
+      // Validate the response format
+      if (!content.startsWith("Yesterday's Progress:")) {
+        throw new Error('Invalid response format');
       }
+
+      return {
+        formattedText: content,
+        usedModel: model
+      };
     } catch (error) {
       console.error(`Error with model ${model}:`, error);
       return null;
@@ -122,6 +88,11 @@ Requirements:
 
   function transformResponse(parsed) {
     // Transform and validate the response
+    if (!parsed || !parsed.yesterdayProgress || !Array.isArray(parsed.yesterdayProgress.tasks)) {
+      console.error('Invalid response structure:', parsed);
+      return null;
+    }
+    
     return {
       yesterdayProgress: {
         tasks: parsed.yesterdayProgress?.tasks?.map(task => ({

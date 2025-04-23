@@ -8,14 +8,20 @@ export default function (openai, AI_MODELS) {
     if (!code || !conversionType) {
       return res.status(400).json({ error: 'code and conversionType required' });
     }
+
     const [from, to] = conversionType.split('-to-');
     if (!from || !to) {
       return res.status(400).json({ error: 'Invalid conversionType format' });
     }
-    const prompt = `
-You are a code converter. Convert from ${from} to ${to}.
-Return ONLY the converted code.
-`;
+
+    const systemPrompt = `You are a code converter that converts code from ${from} to ${to}.
+Instructions:
+1. Convert the provided code to ${to}
+2. Return ONLY the converted code without any explanations
+3. Do not include backticks, language identifiers, or any other text
+4. Maintain the same functionality as the original code
+5. Use idiomatic ${to} patterns and best practices
+6. Include necessary imports/dependencies`;
 
     let converted = null, usedModel = null;
     for (const model of AI_MODELS) {
@@ -23,25 +29,56 @@ Return ONLY the converted code.
         const { choices } = await openai.chat.completions.create({
           model,
           messages: [
-            { role: 'system', content: prompt },
-            { role: 'user', content: code },
+            { 
+              role: 'system', 
+              content: systemPrompt 
+            },
+            { 
+              role: 'user', 
+              content: `Convert this ${from} code to ${to}:\n\n${code}` 
+            },
+            {
+              role: 'assistant',
+              content: `I will convert the code to ${to} following the exact requirements.`
+            }
           ],
-          temperature: 0.3,
+          temperature: 0.2, // Lower temperature for more precise conversion
           max_tokens: 2048,
+          presence_penalty: -0.5, // Encourage focusing on conversion only
+          frequency_penalty: 0.0
         });
-        const content = choices[0].message.content
-          .replace(/```[^\n]*\n?|```/g, '')
+
+        const content = choices[0].message.content.trim();
+        
+        // Remove any markdown code blocks or explanatory text
+        const cleanedContent = content
+          .replace(/^```[\w-]*\n?|```$/gm, '') // Remove code block markers
+          .replace(/^Here's the converted code:?\s*/i, '') // Remove introductory text
+          .replace(/^Converting to[\s\S]*?:\s*/i, '') // Remove conversion statements
           .trim();
-        if (content) {
-          converted = content;
+
+        if (cleanedContent && !cleanedContent.toLowerCase().includes('here') && !cleanedContent.toLowerCase().includes('improve')) {
+          converted = cleanedContent;
           usedModel = model;
           break;
         }
-      } catch {}
+      } catch (error) {
+        console.error(`Error with model ${model}:`, error);
+        continue;
+      }
     }
-    if (!converted) return res.status(500).json({ error: 'All models failed' });
 
-    res.json({ convertedCode: converted, usedModel });
+    if (!converted) {
+      return res.status(500).json({ 
+        error: 'Code conversion failed', 
+        details: 'All models failed to provide valid conversion' 
+      });
+    }
+
+    res.json({ 
+      convertedCode: converted, 
+      usedModel 
+    });
   });
 
   return router;

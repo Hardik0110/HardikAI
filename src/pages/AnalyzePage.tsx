@@ -14,6 +14,8 @@ import { analyzeStock } from "@/lib/api";
 import type { StockAnalysisInput, AnalysisResult } from "@/lib/types";
 import { stockAnalysisSchema, type StockAnalysisFormData } from '@/lib/validations';
 
+const ACCENT = "#ffffff"
+
 type OptionalNumberInputProps = { control: any; name: string; label: string; placeholder?: string };
 const OptionalNumberInput = ({ control, name, label, placeholder = "Optional" }: OptionalNumberInputProps) => (
   <FormField
@@ -175,7 +177,8 @@ export default function AnalyzePage() {
     <DashboardLayout>
       <div className="container mx-auto py-6">
         <motion.h1
-          className="mb-6 text-3xl font-bold text-gradient"
+          className="mb-6 text-3xl font-bold text-red-600"
+          
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -184,12 +187,12 @@ export default function AnalyzePage() {
         </motion.h1>
 
         <motion.div className="max-w-2xl mx-auto" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-          <Card className="border-cyan/20 shadow-md">
+          <Card className="shadow-md" style={{ borderColor: ACCENT }}>
             <CardContent className="p-6">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-5 bg-red-600">
                   <TextInput control={form.control} name="companyName" label="Company Name" placeholder="e.g. Apple Inc." />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 ">
                     <RequiredNumberInput control={form.control} name="currentPrice" label="Current Price (Rupees)" />
                     <RequiredNumberInput control={form.control} name="volume" label="Volume" />
                   </div>
@@ -202,7 +205,7 @@ export default function AnalyzePage() {
                     <OptionalNumberInput control={form.control} name="dividend" label="Dividend (%)" />
                   </div>
                   <TextInput control={form.control} name="news" label="Recent News (Optional)" placeholder="Enter any relevant news..." isTextarea />
-                  <Button type="submit" disabled={isAnalyzing} className="w-full">
+                  <Button type="submit" disabled={isAnalyzing} className="w-full" style={{ backgroundColor: ACCENT, borderColor: ACCENT }}>
                     {isAnalyzing ? "Analyzing..." : "Analyze Stock"}
                   </Button>
                 </form>
