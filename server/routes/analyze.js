@@ -5,28 +5,28 @@ export default function (openai, AI_MODELS) {
 
   async function tryAnalyze(data, model) {
     const sys = `
-You are an expert Indian stock analyst.
-Respond ONLY with JSON (no markdown).
+                  You are an expert Indian stock analyst.
+                  Respond ONLY with JSON (no markdown).
 
-Company: ${data.companyName}
-Price: ₹${data.currentPrice}
-Volume: ${data.volume}
-${data.peRatio ? `P/E: ${data.peRatio}` : ''}
-${data.eps ? `EPS: ${data.eps}` : ''}
-${data.marketCap ? `Market Cap: ₹${data.marketCap} Crores` : ''}
-${data.dividend ? `Dividend: ${data.dividend}%` : ''}
-${data.beta ? `Beta: ${data.beta}` : ''}
-${data.news ? `News: ${data.news}` : ''}
-`;
-    const user = `
-Return ONLY JSON:
-{
-  "technicalTrends": "...",
-  "volumePatterns": "...",
-  "supportResistance": "...",
-  "shortTermOutlook": "...",
-  "stopLoss": number
-}`;
+                  Company: ${data.companyName}
+                  Price: ₹${data.currentPrice}
+                  Volume: ${data.volume}
+                  ${data.peRatio ? `P/E: ${data.peRatio}` : ''}
+                  ${data.eps ? `EPS: ${data.eps}` : ''}
+                  ${data.marketCap ? `Market Cap: ₹${data.marketCap} Crores` : ''}
+                  ${data.dividend ? `Dividend: ${data.dividend}%` : ''}
+                  ${data.beta ? `Beta: ${data.beta}` : ''}
+                  ${data.news ? `News: ${data.news}` : ''}
+                  `;
+                      const user = `
+                  Return ONLY JSON:
+                  {
+                    "technicalTrends": "...",
+                    "volumePatterns": "...",
+                    "supportResistance": "...",
+                    "shortTermOutlook": "...",
+                    "stopLoss": number
+                  }`;
     try {
       const { choices } = await openai.chat.completions.create({
         model,

@@ -176,8 +176,27 @@ export default function AnalyzePage() {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
+      <div className="inset-0">
+          <motion.img
+            src="../src/assets/RedAlien.png"
+            alt=""
+            className="absolute left-20 top-1/2  w-120 h-120 lg:block hidden transform -translate-x-1/4 translate-y-1/4"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+          <motion.img
+            src="../src/assets/Sparrow.png"
+            alt=""
+            className="absolute right-40 top-1/2 w-240 h-240 lg:block hidden transform translate-x-1/4 translate-y-1/4"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        </div>
+        
         <motion.h1
-          className="mb-6 text-3xl font-bold text-red-600"
+          className="mb-6 text-3xl font-bold text-red-500"
           
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +209,7 @@ export default function AnalyzePage() {
           <Card className="shadow-md" style={{ borderColor: ACCENT }}>
             <CardContent className="p-6">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-5 bg-red-600">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-5 bg-red-500 rounded-lg">
                   <TextInput control={form.control} name="companyName" label="Company Name" placeholder="e.g. Apple Inc." />
                   <div className="grid grid-cols-2 gap-4 ">
                     <RequiredNumberInput control={form.control} name="currentPrice" label="Current Price (Rupees)" />
@@ -205,7 +224,7 @@ export default function AnalyzePage() {
                     <OptionalNumberInput control={form.control} name="dividend" label="Dividend (%)" />
                   </div>
                   <TextInput control={form.control} name="news" label="Recent News (Optional)" placeholder="Enter any relevant news..." isTextarea />
-                  <Button type="submit" disabled={isAnalyzing} className="w-full" style={{ backgroundColor: ACCENT, borderColor: ACCENT }}>
+                  <Button type="submit" disabled={isAnalyzing} className="w-full bg-black text-red-500 hover:bg-red-300" >
                     {isAnalyzing ? "Analyzing..." : "Analyze Stock"}
                   </Button>
                 </form>

@@ -10,7 +10,8 @@ import { DashboardLayout } from '@/components/DashboardLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 
-function StandupPopup({ result, onClose }: { result: { formattedText: string; usedModel: string }; onClose: () => void }) {
+// Extracted StandupPopup component
+function StandupPopup({ result, onClose }: { result: StandupResult; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -23,12 +24,31 @@ function StandupPopup({ result, onClose }: { result: { formattedText: string; us
     }
   };
 
+  const popupVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9 }
+  };
+
   return (
-    <motion.div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-      <motion.div className="bg-black/80 rounded-lg shadow-xl p-8 max-w-3xl w-full m-4 max-h-[85vh] overflow-y-auto relative border border-yellow-400/20">
+    <motion.div 
+      className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="bg-black/80 rounded-lg shadow-xl p-8 max-w-3xl w-full m-4 max-h-[85vh] overflow-y-auto relative border border-yellow-400/20"
+        variants={popupVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{ duration: 0.3 }}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-yellow-400 transition-colors"
+          aria-label="Close popup"
         >
           <X className="h-6 w-6" />
         </button>
@@ -40,7 +60,6 @@ function StandupPopup({ result, onClose }: { result: { formattedText: string; us
               <h3 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
                 Daily Standup Report
               </h3>
-              
             </div>
             
             <Button 
@@ -81,13 +100,42 @@ function StandupPopup({ result, onClose }: { result: { formattedText: string; us
   );
 }
 
+function BackgroundImages() {
+  const imageConfig = [
+    {
+      src: "../src/assets/fox.png",
+      className: "absolute left-0 bottom-0 w-80 h-120 opacity-50 lg:block hidden transform -translate-x-1/4 translate-y-1/4",
+      initialX: -100
+    },
+    {
+      src: "../src/assets/alien.png",
+      className: "absolute right-0 bottom-0 w-70 h-100 opacity-50 lg:block hidden transform translate-x-1/4 translate-y-1/4",
+      initialX: 100
+    }
+  ];
+
+  return (
+    <div className="absolute inset-0 pointer-events-none select-none">
+      {imageConfig.map((img, index) => (
+        <motion.img
+          key={index}
+          src={img.src}
+          alt=""
+          className={img.className}
+          initial={{ opacity: 0, x: img.initialX }}
+          animate={{ opacity: 0.9, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DailyStandupPage() {
-  const { toast } = useToast()
-  const [standupResult, setStandupResult] = useState<StandupResult | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [rawText, setRawText] = useState('')
-
-
+  const { toast } = useToast();
+  const [standupResult, setStandupResult] = useState<StandupResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rawText, setRawText] = useState('');
 
   const onTextSubmit = async () => {
     if (!rawText.trim()) {
@@ -95,32 +143,34 @@ export default function DailyStandupPage() {
         title: 'Error',
         description: 'Please enter your standup details',
         variant: 'destructive'
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const result = await generateStandup(rawText)
-      setStandupResult(result)
+      const result = await generateStandup(rawText);
+      setStandupResult(result);
       toast({
         title: 'Standup generated',
         description: 'Your daily standup is ready!'
-      })
+      });
     } catch (e) {
       toast({
         title: 'Error',
         description: 'Failed to generate standup',
         variant: 'destructive'
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <DashboardLayout>
-      <motion.div className="container mx-auto py-8 px-4">
+      <motion.div className="container relative mx-auto py-8 px-4">
+        <BackgroundImages />
+
         <motion.h1
           className="mb-8 rounded-md text-4xl font-bold text-center bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -10 }}
@@ -172,5 +222,5 @@ export default function DailyStandupPage() {
         </AnimatePresence>
       </motion.div>
     </DashboardLayout>
-  )
+  );
 }

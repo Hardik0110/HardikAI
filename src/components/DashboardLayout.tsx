@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { DashboardNav } from "@/components/Header"
-import { Breadcrumbs } from "@/components/breadcrumbs"
+import { Breadcrumbs } from "@/components/BreadCrumbs"
 import { motion } from "framer-motion"
 import { LightPullThemeSwitcher } from "@/components/ui/light-pull-theme-switcher"
 
@@ -12,10 +12,10 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <header className="shrink-0 sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <motion.span
               className="text-2xl font-bold text-gradient"
               whileHover={{ scale: 1.05 }}
@@ -45,11 +45,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
+        style={{ overflowY: 'hidden' }}
       >
         <div className="relative">
           <div className="absolute right-2 flex flex-col items-center">
             <LightPullThemeSwitcher />
-            <span className="mt-2 text-xs text-muted-foreground">
+            <span className="mt-2 text-xs text-extrabold">
               Pull to switch theme
             </span>
           </div>

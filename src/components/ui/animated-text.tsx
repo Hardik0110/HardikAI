@@ -20,7 +20,7 @@ interface AnimatedTextProps extends React.HTMLAttributes<HTMLDivElement> {
 const AnimatedText = React.forwardRef<HTMLDivElement, AnimatedTextProps>(
   ({
     text,
-    duration = 0.5,
+    duration = 0.2,
     delay = 0.1,
     replay = true,
     className,

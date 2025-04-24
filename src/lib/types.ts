@@ -2,60 +2,59 @@ import { ReactNode } from "react";
 
 export type ClassValue = string | number | boolean | undefined | null | { [key: string]: boolean } | ClassValue[];
 
-export interface AnalyzePageProps {
+// Common types
+type PageProps = {
   children?: ReactNode;
+};
+
+export interface CardVariantTransition {
+  delay: number;
+  duration: number;
 }
 
-export interface DashboardPageProps {
-  children?: ReactNode;
+export interface CardVariant {
+  opacity: number;
+  y: number;
 }
 
 export interface CardVariants {
-  hidden: {
-    opacity: number;
-    y: number;
-  };
+  [key: string]: any;
+  hidden: { opacity: number; y: number };
   visible: (i: number) => {
     opacity: number;
     y: number;
-    transition: {
-      delay: number;
-      duration: number;
-    };
+    transition: { delay: number; duration: number };
   };
-}
+};
 
-export interface IntroductionPageProps {
-  children?: ReactNode;
-}
+// Page Props
+export type AnalyzePageProps = PageProps;
+export type DashboardPageProps = PageProps;
+export type IntroductionPageProps = PageProps;
+export type LoginPageProps = PageProps;
+export type OptimizePageProps = PageProps;
 
-export interface LoginPageProps {
-  children?: ReactNode;
-}
-
+// Form Data
 export interface LoginFormData {
   email: string;
   password: string;
 }
 
-export interface OptimizePageProps {
-  children?: ReactNode;
-}
-
+// Optimization Types
 export type OptimizationType = "hooks" | "readability" | "linting" | "bugs";
 
 export interface CodeOptimizeButtonProps {
   onClick: () => void;
-    isLoading: boolean
-    icon: string
-    label: string
-    description: string
-    index: number
-    className?: string
-    style?: React.CSSProperties
-  
+  isLoading: boolean;
+  icon: string;
+  label: string;
+  description: string;
+  index: number;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
+// Analysis Types
 export interface StockAnalysisInput {
   companyName: string;
   currentPrice: number;
@@ -67,7 +66,7 @@ export interface StockAnalysisInput {
   dividend?: number;
   beta?: number;
 }
-  
+
 export interface AnalysisResult {
   technicalTrends: string;
   volumePatterns: string;
@@ -77,6 +76,7 @@ export interface AnalysisResult {
   text?: string;
 }
 
+// Conversion Types
 export type ConversionType = 
   | "javascript-to-typescript"
   | "typescript-to-python"
@@ -85,46 +85,30 @@ export type ConversionType =
   | "vue-to-react"
   | "javascript-to-java";
 
-export interface ConversionResponse {
-  convertedCode: string;
-  usedModel: string;
-}
-
-export interface ConvertRequest {
-  code: string;
-  conversionType: ConversionType;
-}
-
+// Task Types
 export interface Task {
   name: string;
   subTasks: string[];
   hours: number;
   minutes: number;
+  blockers?: string;
 }
 
 export interface StandupFormData {
-  tasks: Array<{
-    name: string;
-    subTasks: string[];
-    hours: number;
-    minutes: number;
-    blockers?: string;
-  }>;
+  tasks: Task[];
 }
 
-export type StandupResult = {
-  formattedText: string;
+// API Response Types
+export interface ModelResponse {
   usedModel: string;
 }
 
-export interface OptimizeResponse {
+export interface OptimizeResponse extends ModelResponse {
   optimizedCode: string;
-  usedModel: string;
 }
 
-export interface AnalyzeResponse {
+export interface AnalyzeResponse extends ModelResponse {
   analysisResult: string;
-  usedModel: string;
   technicalTrends: string;
   volumePatterns: string;
   supportResistance: string;
@@ -132,14 +116,22 @@ export interface AnalyzeResponse {
   stopLoss: number;
 }
 
-export interface ConversionResponse {
+export interface ConversionResponse extends ModelResponse {
   convertedCode: string;
-  usedModel: string;
 }
 
+export interface StandupResult extends ModelResponse {
+  formattedText: string;
+}
+
+export interface StandupFormattedResponse extends StandupResult {
+  // Extended from StandupResult, inherits usedModel and formattedText
+}
+
+// API Request Types
 export interface OptimizeRequest {
   code: string;
-  optimizationType: "hooks" | "readability" | "linting" | "bugs";
+  optimizationType: OptimizationType;
 }
 
 export interface ConvertRequest {
@@ -147,8 +139,16 @@ export interface ConvertRequest {
   conversionType: ConversionType;
 }
 
+export interface StandupTextInput {
+  rawText: string;
+}
 
-export interface StandupAPIResponse {
+export interface StandupFormattedTextResponse {
+  formattedText: string;
+  standupData: StandupFormattedResponse;
+}
+
+export interface StandupAPIResponse extends ModelResponse {
   yesterdayProgress: {
     tasks: {
       name: string;
@@ -165,18 +165,5 @@ export interface StandupAPIResponse {
   }>;
   blockers?: string[];
   todaysPlan?: string[];
-  usedModel: string;
 }
 
-export interface StandupFormattedTextResponse {
-  formattedText: string;
-  standupData: StandupFormattedResponse;
-}
-
-export interface StandupFormattedResponse extends StandupResult {
-  usedModel: string;
-}
-
-export interface StandupTextInput {
-  rawText: string;
-}

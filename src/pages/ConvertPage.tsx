@@ -68,6 +68,14 @@ export default function ConvertPage() {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
+      <motion.img
+            src="../src/assets/ConvertRobot.png"
+            alt=""
+            className="absolute left-0  w-52 h-80  lg:block hidden transform -translate-x-1/4 "
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 0.9, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
         <motion.h1
           className="mb-6 text-3xl font-bold"
           style={{

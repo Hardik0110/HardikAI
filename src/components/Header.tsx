@@ -5,16 +5,46 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
 const navItems = [
-  { path: "/dashboard",    label: "Dashboard",    icon: Home,      color: "#08D9D6" },
-  { path: "/optimize",     label: "Optimize",     icon: Code,      color: "#08D9D6" },
-  { path: "/analyze",      label: "Analyze",      icon: LineChart, color: "#DC2626" },
-  { path: "/convert",      label: "Convert",      icon: FileCode,  color: "#9333EA" },
-  { path: "/standup",      label: "DailyStandup", icon: Speech,    color: "#F59E0B" },
+  { 
+    path: "/dashboard", 
+    label: "Dashboard", 
+    icon: Home, 
+    color: "bg-blue-500",
+    hoverColor: "hover:bg-blue-500/20 hover:text-blue-500" 
+  },
+  { 
+    path: "/optimize", 
+    label: "Optimize", 
+    icon: Code, 
+    color: "bg-[#10B981]",
+    hoverColor: "hover:bg-[#10B981]/20 hover:text-[#10B981]"
+  },
+  { 
+    path: "/analyze", 
+    label: "Analyze", 
+    icon: LineChart, 
+    color: "bg-red-600",
+    hoverColor: "hover:bg-red-600/20 hover:text-red-600"
+  },
+  { 
+    path: "/convert", 
+    label: "Convert", 
+    icon: FileCode, 
+    color: "bg-purple-600",
+    hoverColor: "hover:bg-purple-600/20 hover:text-purple-600"
+  },
+  { 
+    path: "/standup", 
+    label: "DailyStandup", 
+    icon: Speech, 
+    color: "bg-amber-500",
+    hoverColor: "hover:bg-amber-500/20 hover:text-amber-500"
+  },
 ]
 
 export function DashboardNav() {
   const { pathname } = useLocation()
-  const activeColor = navItems.find(item => item.path === pathname)?.color || "#000"
+  const activeItem = navItems.find(item => item.path === pathname)
 
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     window.location.href = e.target.value
@@ -27,19 +57,22 @@ export function DashboardNav() {
         <select
           value={pathname}
           onChange={handleSelect}
-          className="cursor-pointer w-full rounded-lg border-2 p-2 text-center text-base font-medium focus:outline-none focus:ring-2"
-          style={{ borderColor: activeColor, color: activeColor }}
+          className={cn(
+            "cursor-pointer w-full rounded-lg border-2 p-2 text-center text-base font-medium focus:outline-none focus:ring-2",
+            activeItem?.color.replace('bg-', 'border-').replace('border-opacity-20', '')
+          )}
         >
-          {navItems.map(({ path, label, color }) => (
-            <option key={path} value={path} style={{ color: color }}>
+          {navItems.map(({ path, label }) => (
+            <option key={path} value={path}>
               {label}
             </option>
           ))}
         </select>
       </div>
 
+      {/* Desktop navigation */}
       <nav className="hidden md:flex items-center gap-2">
-        {navItems.map(({ path, label, icon: Icon, color }, idx) => {
+        {navItems.map(({ path, label, icon: Icon, color, hoverColor }, idx) => {
           const isActive = pathname === path
           return (
             <Link key={path} to={path}>
@@ -56,9 +89,7 @@ export function DashboardNav() {
                   size="sm"
                   className={cn(
                     "gap-1 transition-colors",
-                    isActive
-                      ? `bg-[${color}] text-black`
-                      : `hover:bg-[${color}]/20 hover:text-[${color}]`
+                    isActive ? color : hoverColor
                   )}
                 >
                   <Icon className="h-4 w-4" />
