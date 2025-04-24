@@ -9,7 +9,7 @@ import AnalyzePage from "@/pages/AnalyzePage"
 import ConvertPage from "@/pages/ConvertPage"
 import DailyStandupPage from "@/pages/DailyStandupPage"
 
-function App() {
+function Router() {
   const location = useLocation()
 
   return (
@@ -30,4 +30,4 @@ function App() {
   )
 }
 
-export default App
+export default Router

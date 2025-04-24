@@ -40,12 +40,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       <motion.main
-        className="flex-1 bg-muted/40 overflow-hidden"
+        className="flex-1 bg-muted/40 overflow-y-scroll scrollbar-hide"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        style={{ overflowY: 'hidden' }}
       >
         <div className="relative">
           <div className="absolute right-2 flex flex-col items-center">

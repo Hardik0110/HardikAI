@@ -175,7 +175,7 @@ export default function AnalyzePage() {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-2">
       <div className="inset-0">
           <motion.img
             src="../src/assets/RedAlien.png"
@@ -196,7 +196,7 @@ export default function AnalyzePage() {
         </div>
         
         <motion.h1
-          className="mb-6 text-3xl font-bold text-red-500"
+          className="text-3xl font-bold text-red-500"
           
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
