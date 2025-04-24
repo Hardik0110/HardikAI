@@ -68,7 +68,7 @@ export default function DashboardPage() {
               alt=""
               className={`fixed ${img.position} w-[600px] h-[600px] opacity-70 lg:block hidden pointer-events-none`}
               style={{ maxWidth: img.maxWidth || '30vw' }}
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: 0 }}
               animate={{ opacity: 0.7, x: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
