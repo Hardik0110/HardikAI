@@ -86,7 +86,7 @@ export default function AnalyzePage() {
           <motion.img
             src="../src/assets/RedAlien.png"
             alt=""
-            className="absolute left-20 top-1/2  w-120 h-120 lg:block hidden transform -translate-x-1/4 translate-y-1/4"
+            className="absolute left-20 top-1/2  w-120 h-120 lg:block hidden "
             initial={{ opacity: 0, x: -100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -94,7 +94,7 @@ export default function AnalyzePage() {
           <motion.img
             src="../src/assets/Sparrow.png"
             alt=""
-            className="absolute right-40 top-1/2 w-240 h-240 lg:block hidden transform translate-x-1/4 translate-y-1/4"
+            className="absolute right-40 top-1/2 w-240 h-240 lg:block hidden "
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -120,7 +120,7 @@ export default function AnalyzePage() {
             <CardContent className="p-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-5 bg-red-500 rounded-lg">
-                  <TextInput control={form.control} name="companyName" label="Company Name" placeholder="e.g. Apple Inc." />
+                  <TextInput control={form.control} name="companyName" label="Company Name" placeholder="e.g. Tata Motors" />
                   <div className="grid grid-cols-2 gap-4 ">
                     <RequiredNumberInput control={form.control} name="currentPrice" label="Current Price (Rupees)" />
                     <RequiredNumberInput control={form.control} name="volume" label="Volume" />

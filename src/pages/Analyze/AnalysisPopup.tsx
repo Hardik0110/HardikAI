@@ -38,7 +38,7 @@ export const AnalysisPopup = ({ analysisResult, onClose }: AnalysisPopupProps) =
             content: `Support: ${analysisResult.supportResistance.support} | Resistance: ${analysisResult.supportResistance.resistance}`
           },
           { title: "Short-term Outlook", content: analysisResult.shortTermOutlook },
-          { title: "Stop Loss", content: analysisResult.stopLoss.toFixed(2) },
+          { title: "Stop Loss", content: analysisResult.stopLoss.toFixed(4) },
         ].map(({ title, content }) => (
           <div key={title} className="rounded-md bg-gray-500 p-4 border border-pink/10">
             <h4 className="font-medium mb-2">{title}</h4>

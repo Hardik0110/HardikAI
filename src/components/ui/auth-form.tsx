@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const AuthForm: React.FC = () => {
   return (
-    <div className="bg-gradient-to-b from-dark to-dark/90 dark:bg-zinc-950 py-20 text-zinc-800 dark:text-zinc-200 selection:bg-zinc-300 dark:selection:bg-zinc-600">
+    <div className="h-full bg-gradient-to-b from-dark to-dark/90 dark:bg-zinc-950 py-20 text-zinc-800 dark:text-zinc-200 selection:bg-zinc-300 dark:selection:bg-zinc-600">
         <Link to="/" className="absolute top-4 left-4">
          <BackButton /> 
         </Link>
@@ -17,7 +17,7 @@ const AuthForm: React.FC = () => {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.25, ease: "easeInOut" }}
-        className="mx-auto w-full max-w-xl h-screen"
+        className="mx-auto w-full max-w-xl"
       >
         <Logo />
         <Header />
