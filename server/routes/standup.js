@@ -6,35 +6,35 @@ export default function (openai, AI_MODELS) {
   async function tryStandup(data, model) {
     const system = `You are a daily standup report generator. Follow this EXACT format with NO additional headers or sections:
 
-Yesterday's Progress:
-{List tasks with exact time durations in (Xh Ym) format}
-- Each main task should include total time
-- Break down tasks over 2 hours into subtasks
-- Include ticket numbers where applicable
-- Each subtask must show its duration
+                    Yesterday's Progress:
+                    {List tasks with exact time durations in (Xh Ym) format}
+                    - Each main task should include total time
+                    - Break down tasks over 2 hours into subtasks
+                    - Include ticket numbers where applicable
+                    - Each subtask must show its duration
 
-Example format:
-Yesterday's Progress:
-Frontend Development (4h 30m)
-- Implemented user authentication flow (2h 15m)
-  - Login component setup (1h)
-  - Token management integration (45m)
-  - Testing and fixes (30m)
-- Dashboard layout creation (2h 15m)
+                    Example format:
+                    Yesterday's Progress:
+                    Frontend Development (4h 30m)
+                    - Implemented user authentication flow (2h 15m)
+                      - Login component setup (1h)
+                      - Token management integration (45m)
+                      - Testing and fixes (30m)
+                    - Dashboard layout creation (2h 15m)
 
-Learnings & Insights:
-- {Each learning point with time spent on it}
-- Example: Improved understanding of React Context API (30m)
+                    Learnings & Insights:
+                    - {Each learning point with time spent on it}
+                    - Example: Improved understanding of React Context API (30m)
 
-Blockers:
-- {List any blocking issues or "No major blockers"}
-- Must be specific technical issues if any
+                    Blockers:
+                    - {List any blocking issues or "No major blockers"}
+                    - Must be specific technical issues if any
 
-Today's Plan:
-- {List specific tasks planned, with technical details}
-- Include estimated time for each task
+                    Today's Plan:
+                    - {List specific tasks planned, with technical details}
+                    - Include estimated time for each task
 
-DO NOT add any other sections, dates, or formatting.`;
+                    DO NOT add any other sections, dates, or formatting.`;
 
     try {
       const userPrompt = typeof data === 'string' || data.rawText

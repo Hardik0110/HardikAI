@@ -20,17 +20,53 @@ export default function OptimizePage() {
 
   const handleOptimize = async (optimizationType: OptimizationType) => {
     if (!code.trim()) {
-      toast({ title: "No code provided", description: "Please enter some code", variant: "destructive" })
+      toast({ 
+        title: "No code provided", 
+        description: "Please enter some code", 
+        variant: "destructive" 
+      })
       return
     }
+
     setIsOptimizing(true)
     try {
+      console.log('Optimizing code:', {
+        optimizationType,
+        codeLength: code.length,
+        timestamp: new Date().toISOString(),
+        preview: code.substring(0, 200) + '...' 
+      });
+
       const response = await optimizeCode({ code, optimizationType })
+
+      // Log successful response
+      console.log('Optimization API Response:', {
+        optimizationType,
+        optimizedCode: response.optimizedCode,
+        usedModel: response.usedModel,
+        timestamp: new Date().toISOString(),
+        success: true
+      });
+
       setOptimizedCode(response.optimizedCode)
       setUsedModel(response.usedModel)
-      toast({ title: "Code optimized", description: `Applied ${optimizationType}` })
+      toast({ 
+        title: "Code optimized", 
+        description: `Applied ${optimizationType}` 
+      })
     } catch (error) {
-      toast({ title: "Optimization failed", description: (error as Error).message, variant: "destructive" })
+      console.error('Optimization error:', {
+        optimizationType,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString()
+      });
+
+      toast({ 
+        title: "Optimization failed", 
+        description: (error as Error).message, 
+        variant: "destructive" 
+      })
     } finally {
       setIsOptimizing(false)
     }

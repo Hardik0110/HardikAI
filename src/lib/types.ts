@@ -68,12 +68,15 @@ export interface StockAnalysisInput {
 }
 
 export interface AnalysisResult {
+  text?: string;
   technicalTrends: string;
   volumePatterns: string;
-  supportResistance: string;
+  supportResistance: {
+    support: number;
+    resistance: number;
+  };
   shortTermOutlook: string;
   stopLoss: number;
-  text?: string;
 }
 
 // Conversion Types

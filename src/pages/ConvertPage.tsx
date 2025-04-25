@@ -31,14 +31,24 @@ export default function ConvertPage() {
     setIsConverting(true)
 
     try {
-      console.log(`Starting conversion: ${conversionType}`);
+      console.log('Converting code:', {
+        conversionType,
+        codeLength: code.length,
+        code: code.substring(0, 200) + '...' 
+      });
       
       const response = await convertCode({
         code,
         conversionType
       })
 
-      console.log('Conversion successful:', response);
+      console.log('Conversion API Response:', {
+        conversionType,
+        convertedCode: response.convertedCode,
+        usedModel: response.usedModel,
+        timestamp: new Date().toISOString(),
+        success: true
+      });
       
       setConvertedCode(response.convertedCode)
       setUsedModel(response.usedModel)
@@ -48,7 +58,13 @@ export default function ConvertPage() {
         description: `Converted using ${conversionType}`,
       })
     } catch (error) {
-      console.error('Conversion error:', error);
+      // Enhanced error logging
+      console.error('Conversion error:', {
+        conversionType,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString()
+      });
       
       toast({
         title: "Conversion failed",

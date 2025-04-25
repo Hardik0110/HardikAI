@@ -149,13 +149,33 @@ export default function DailyStandupPage() {
 
     setIsLoading(true);
     try {
+      console.log('Generating standup with input:', {
+        textLength: rawText.length,
+        timestamp: new Date().toISOString(),
+        preview: rawText.substring(0, 100) + '...' 
+      });
+
       const result = await generateStandup(rawText);
+
+      console.log('Standup API Response:', {
+        formattedText: result.formattedText,
+        usedModel: result.usedModel,
+        timestamp: new Date().toISOString(),
+        success: true
+      });
+
       setStandupResult(result);
       toast({
         title: 'Standup generated',
         description: 'Your daily standup is ready!'
       });
-    } catch (e) {
+    } catch (error) {
+      console.error('Standup generation error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString()
+      });
+
       toast({
         title: 'Error',
         description: 'Failed to generate standup',

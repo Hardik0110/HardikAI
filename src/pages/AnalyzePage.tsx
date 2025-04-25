@@ -109,7 +109,10 @@ const AnalysisPopup = ({ analysisResult, onClose }: AnalysisPopupProps) => (
         {[
           { title: "Technical Trends", content: analysisResult.technicalTrends },
           { title: "Volume Patterns", content: analysisResult.volumePatterns },
-          { title: "Support/Resistance Levels", content: analysisResult.supportResistance },
+          { 
+            title: "Support/Resistance Levels", 
+            content: `Support: ${analysisResult.supportResistance.support} | Resistance: ${analysisResult.supportResistance.resistance}`
+          },
           { title: "Short-term Outlook", content: analysisResult.shortTermOutlook },
           { title: "Stop Loss", content: analysisResult.stopLoss.toFixed(2) },
         ].map(({ title, content }) => (
@@ -158,11 +161,26 @@ export default function AnalyzePage() {
         dividend: data.dividend ?? undefined,
         beta: data.beta ?? undefined,
       };
+
+      console.log('Sending analysis request with data:', cleanData);
+      
       const result = await analyzeStock(cleanData);
+      
+      console.log('Analysis API Response:', {
+        technicalTrends: result.technicalTrends,
+        volumePatterns: result.volumePatterns,
+        supportResistance: result.supportResistance,
+        shortTermOutlook: result.shortTermOutlook,
+        stopLoss: result.stopLoss
+      });
+
       setAnalysisResult(result);
       toast({ title: "Analysis complete", description: "Stock analysis has been successfully generated" });
     } catch (error) {
-      console.error("Analysis error:", error);
+      console.error("Analysis error:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        error
+      });
       toast({
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
