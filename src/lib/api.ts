@@ -12,11 +12,10 @@ import {
 export const API_CONFIG = {
   baseURL: "http://localhost:3001/v1",
   models: [
-    "gpt-4o-2024-05-13",
-    "claude-3-5-sonnet-20240620",
-    "deepseek-r1",
     "Meta-Llama-3.3-70B-Instruct-Turbo",
-    "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+    "claude-3-5-sonnet-20240620",
+    "gpt-4o-2024-05-13",
+    "deepseek-r1",
     "deepseek-v3",
   ],
   maxRequestSize: 1024 * 1024 

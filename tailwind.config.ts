@@ -23,24 +23,24 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#08D9D6", // Teal/cyan
-          foreground: "#252A34", // Dark blue/black
+          DEFAULT: "#08D9D6", 
+          foreground: "#252A34", 
         },
         secondary: {
-          DEFAULT: "#FF2E63", // Pink/red
-          foreground: "#EAEAEA", // Light gray
+          DEFAULT: "#FF2E63", 
+          foreground: "#EAEAEA", 
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#EAEAEA", // Light gray
-          foreground: "#252A34", // Dark blue/black
+          DEFAULT: "#EAEAEA", 
+          foreground: "#252A34", 
         },
         accent: {
-          DEFAULT: "#FF2E63", // Pink/red
-          foreground: "#EAEAEA", // Light gray
+          DEFAULT: "#FF2E63", 
+          foreground: "#EAEAEA", 
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

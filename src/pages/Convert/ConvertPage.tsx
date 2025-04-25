@@ -81,7 +81,7 @@ export default function ConvertPage() {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto ">
         <motion.img
           src="../src/assets/ConvertRobot.png"
           alt=""
@@ -110,7 +110,7 @@ export default function ConvertPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <Textarea
                 placeholder="Paste your code here..."
-                className="min-h-[600px] font-mono border-b"
+                className="relative min-h-[600px] font-mono border-b"
                 style={{ borderColor: ACCENT }}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -135,6 +135,7 @@ export default function ConvertPage() {
                 label={ct.replace(/-/g, " ").toUpperCase()}
                 description={`Convert via ${ct}`}
                 index={i}
+                variant="convert"
               />
             ))}
           </div>

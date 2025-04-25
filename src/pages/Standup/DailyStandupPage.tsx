@@ -103,7 +103,7 @@ export default function DailyStandupPage() {
         <BackgroundImages />
 
         <motion.h1
-          className="mb-8 rounded-md text-4xl font-bold text-center bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent"
+          className="mb-8 rounded-md text-4xl font-bold text-center bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -114,7 +114,7 @@ export default function DailyStandupPage() {
         <Card className="max-w-2xl mx-auto border-yellow-400/20 shadow-lg bg-black/40">
           <CardContent className="p-8 space-y-6">
             <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid grid-cols-2 mb-6">
+              <TabsList className="grid grid-cols-2 mb-6 bg-yellow-300">
                 <TabsTrigger value="text">Quick Text Entry</TabsTrigger>
                 <TabsTrigger value="detailed">Detailed Form Will be added soon!!</TabsTrigger>
               </TabsList>

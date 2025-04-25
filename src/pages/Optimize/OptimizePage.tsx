@@ -109,7 +109,7 @@ export default function OptimizePage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <Textarea
                 placeholder="Paste your code here..."
-                className="min-h-[600px] font-bold border-b"
+                className="relative min-h-[600px] font-bold border-b"
                 style={{ borderColor: ACCENT }}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -127,6 +127,7 @@ export default function OptimizePage() {
                 label={opt.charAt(0).toUpperCase() + opt.slice(1)}
                 description={`Apply ${opt} optimizations`}
                 index={i}
+                variant="optimize"
               />
             ))}
           </div>

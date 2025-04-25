@@ -116,10 +116,10 @@ export default function AnalyzePage() {
           animate={{ opacity: 1, x: 0 }} 
           transition={{ duration: 0.5 }}
         >
-          <Card className="shadow-md" style={{ borderColor: ACCENT }}>
+          <Card className="shadow-md relative" style={{ borderColor: ACCENT }}>
             <CardContent className="p-6">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-5 bg-red-500 rounded-lg">
+                <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6 p-5 bg-red-500 rounded-lg">
                   <TextInput control={form.control} name="companyName" label="Company Name" placeholder="e.g. Tata Motors" />
                   <div className="grid grid-cols-2 gap-4 ">
                     <RequiredNumberInput control={form.control} name="currentPrice" label="Current Price (Rupees)" />
