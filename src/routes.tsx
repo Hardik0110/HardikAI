@@ -4,10 +4,10 @@ import { Toaster } from "@/components/ui/toaster"
 import IntroductionPage from "@/pages/IntroductionPage"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
-import OptimizePage from "@/pages/OptimizePage"
-import AnalyzePage from "@/pages/AnalyzePage"
-import ConvertPage from "@/pages/ConvertPage"
-import DailyStandupPage from "@/pages/DailyStandupPage"
+import OptimizePage from "@/pages/Optimize/OptimizePage"
+import AnalyzePage from "@/pages/Analyze/AnalyzePage"
+import ConvertPage from "@/pages/Convert/ConvertPage"
+import DailyStandupPage from "@/pages/Standup/DailyStandupPage"
 
 function Router() {
   const location = useLocation()

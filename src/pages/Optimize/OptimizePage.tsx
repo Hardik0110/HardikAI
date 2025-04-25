@@ -39,7 +39,6 @@ export default function OptimizePage() {
 
       const response = await optimizeCode({ code, optimizationType })
 
-      // Log successful response
       console.log('Optimization API Response:', {
         optimizationType,
         optimizedCode: response.optimizedCode,

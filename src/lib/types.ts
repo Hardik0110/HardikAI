@@ -40,7 +40,6 @@ export interface LoginFormData {
   password: string;
 }
 
-// Optimization Types
 export type OptimizationType = "hooks" | "readability" | "linting" | "bugs";
 
 export interface CodeOptimizeButtonProps {
@@ -54,11 +53,10 @@ export interface CodeOptimizeButtonProps {
   style?: React.CSSProperties;
 }
 
-// Analysis Types
 export interface StockAnalysisInput {
   companyName: string;
-  currentPrice: number;
-  volume: number;
+  currentPrice?: number;
+  volume?: number;
   news?: string;
   peRatio?: number;
   eps?: number;
@@ -79,7 +77,6 @@ export interface AnalysisResult {
   stopLoss: number;
 }
 
-// Conversion Types
 export type ConversionType = 
   | "javascript-to-typescript"
   | "typescript-to-python"

@@ -3,129 +3,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-import { LineChart, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { analyzeStock } from "@/lib/api";
 import type { StockAnalysisInput, AnalysisResult } from "@/lib/types";
 import { stockAnalysisSchema, type StockAnalysisFormData } from '@/lib/validations';
+import { OptionalNumberInput, RequiredNumberInput, TextInput } from "./AnalysisInput";
+import { AnalysisPopup } from "./AnalysisPopup";
 
 const ACCENT = "#ffffff"
-
-type OptionalNumberInputProps = { control: any; name: string; label: string; placeholder?: string };
-const OptionalNumberInput = ({ control, name, label, placeholder = "Optional" }: OptionalNumberInputProps) => (
-  <FormField
-    control={control}
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <Input
-            className="border-b"
-            type="number"
-            placeholder={placeholder}
-            value={field.value ?? ""}
-            onChange={(e) => field.onChange(e.target.value === "" ? null : parseFloat(e.target.value))}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-type RequiredNumberInputProps = { control: any; name: string; label: string; placeholder?: string };
-const RequiredNumberInput = ({ control, name, label, placeholder }: RequiredNumberInputProps) => (
-  <FormField
-    control={control}
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <Input
-            className="border-b"
-            type="number"
-            placeholder={placeholder}
-            value={field.value}
-            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-type TextInputProps = { control: any; name: string; label: string; placeholder?: string; isTextarea?: boolean };
-const TextInput = ({ control, name, label, placeholder, isTextarea = false }: TextInputProps) => (
-  <FormField
-    control={control}
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          {isTextarea ? (
-            <Textarea className="border-b" placeholder={placeholder} {...field} />
-          ) : (
-            <Input className="border-b" placeholder={placeholder} {...field} />
-          )}
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-type AnalysisPopupProps = { analysisResult: AnalysisResult; onClose: () => void };
-const AnalysisPopup = ({ analysisResult, onClose }: AnalysisPopupProps) => (
-  <motion.div
-    className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-  >
-    <motion.div
-      className="bg-black/60 rounded-lg shadow-xl p-6 max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto relative"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-        <X className="h-5 w-5" />
-      </button>
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <LineChart className="h-5 w-5 text-pink" />
-          <h3 className="text-lg font-medium text-gradient">Analysis Results</h3>
-        </div>
-        {[
-          { title: "Technical Trends", content: analysisResult.technicalTrends },
-          { title: "Volume Patterns", content: analysisResult.volumePatterns },
-          { 
-            title: "Support/Resistance Levels", 
-            content: `Support: ${analysisResult.supportResistance.support} | Resistance: ${analysisResult.supportResistance.resistance}`
-          },
-          { title: "Short-term Outlook", content: analysisResult.shortTermOutlook },
-          { title: "Stop Loss", content: analysisResult.stopLoss.toFixed(2) },
-        ].map(({ title, content }) => (
-          <div key={title} className="rounded-md bg-gray-500 p-4 border border-pink/10">
-            <h4 className="font-medium mb-2">{title}</h4>
-            <p className="text-sm">{content}</p>
-          </div>
-        ))}
-        <Button onClick={onClose} className="w-full">Close</Button>
-      </div>
-    </motion.div>
-  </motion.div>
-);
 
 export default function AnalyzePage() {
   const { toast } = useToast();
@@ -152,8 +40,8 @@ export default function AnalyzePage() {
     try {
       const cleanData: StockAnalysisInput = {
         companyName: data.companyName,
-        currentPrice: data.currentPrice,
-        volume: data.volume,
+        currentPrice: data.currentPrice ?? undefined,
+        volume: data.volume ?? undefined,
         news: data.news || undefined,
         peRatio: data.peRatio ?? undefined,
         eps: data.eps ?? undefined,
@@ -194,7 +82,7 @@ export default function AnalyzePage() {
   return (
     <DashboardLayout>
       <div className="container mx-auto py-2">
-      <div className="inset-0">
+        <div className="inset-0">
           <motion.img
             src="../src/assets/RedAlien.png"
             alt=""
@@ -215,7 +103,6 @@ export default function AnalyzePage() {
         
         <motion.h1
           className="text-3xl font-bold text-red-500"
-          
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -223,7 +110,12 @@ export default function AnalyzePage() {
           Stock Analysis
         </motion.h1>
 
-        <motion.div className="max-w-2xl mx-auto" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div 
+          className="max-w-2xl mx-auto" 
+          initial={{ opacity: 0, x: -20 }} 
+          animate={{ opacity: 1, x: 0 }} 
+          transition={{ duration: 0.5 }}
+        >
           <Card className="shadow-md" style={{ borderColor: ACCENT }}>
             <CardContent className="p-6">
               <Form {...form}>
@@ -251,7 +143,14 @@ export default function AnalyzePage() {
           </Card>
         </motion.div>
 
-        <AnimatePresence>{analysisResult && <AnalysisPopup analysisResult={analysisResult} onClose={() => setAnalysisResult(null)} />}</AnimatePresence>
+        <AnimatePresence>
+          {analysisResult && (
+            <AnalysisPopup 
+              analysisResult={analysisResult} 
+              onClose={() => setAnalysisResult(null)} 
+            />
+          )}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
   );

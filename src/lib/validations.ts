@@ -30,7 +30,6 @@ export const standupTextSchema = z.object({
   
   export type StandupTextData = z.infer<typeof standupTextSchema>
 
-// Types derived from schemas
 export type TaskFormData = z.infer<typeof taskSchema>
 export type StandupFormData = z.infer<typeof standupFormSchema>
 export type StockAnalysisFormData = z.infer<typeof stockAnalysisSchema>
