@@ -1,14 +1,7 @@
-import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-type OptionalNumberInputProps = {
-  control: Control<any>;
-  name: string;
-  label: string;
-  placeholder?: string;
-};
+import { RequiredNumberInputProps, TextInputProps, OptionalNumberInputProps } from "@/lib/types";
 
 export const OptionalNumberInput = ({ control, name, label, placeholder = "Optional" }: OptionalNumberInputProps) => (
   <FormField
@@ -30,14 +23,7 @@ export const OptionalNumberInput = ({ control, name, label, placeholder = "Optio
       </FormItem>
     )}
   />
-);
-
-type RequiredNumberInputProps = {
-  control: Control<any>;
-  name: string;
-  label: string;
-  placeholder?: string;
-};
+)
 
 export const RequiredNumberInput = ({ control, name, label, placeholder }: RequiredNumberInputProps) => (
   <FormField
@@ -60,14 +46,6 @@ export const RequiredNumberInput = ({ control, name, label, placeholder }: Requi
     )}
   />
 );
-
-type TextInputProps = {
-  control: Control<any>;
-  name: string;
-  label: string;
-  placeholder?: string;
-  isTextarea?: boolean;
-};
 
 export const TextInput = ({ control, name, label, placeholder, isTextarea = false }: TextInputProps) => (
   <FormField

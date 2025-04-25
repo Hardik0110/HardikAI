@@ -2,12 +2,7 @@ import { motion } from "framer-motion"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-
-interface ConversionPopupProps {
-  convertedCode: string
-  usedModel: string | null
-  onClose: () => void
-}
+import { ConversionPopupProps } from "@/lib/types"
 
 export function ConversionPopup({ convertedCode, usedModel, onClose }: ConversionPopupProps) {
   const { toast } = useToast()

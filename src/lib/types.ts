@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Control } from "react-hook-form";
 
 export type ClassValue = string | number | boolean | undefined | null | { [key: string]: boolean } | ClassValue[];
 
@@ -125,10 +126,8 @@ export interface StandupResult extends ModelResponse {
 }
 
 export interface StandupFormattedResponse extends StandupResult {
-  // Extended from StandupResult, inherits usedModel and formattedText
 }
 
-// API Request Types
 export interface OptimizeRequest {
   code: string;
   optimizationType: OptimizationType;
@@ -167,3 +166,30 @@ export interface StandupAPIResponse extends ModelResponse {
   todaysPlan?: string[];
 }
 
+export type RequiredNumberInputProps = {
+  control: Control<any>;
+  name: string;
+  label: string;
+  placeholder?: string;
+}
+
+export type TextInputProps = {
+  control: Control<any>;
+  name: string;
+  label: string;
+  placeholder?: string;
+  isTextarea?: boolean;
+}
+
+export type OptionalNumberInputProps = {
+  control: Control<any>;
+  name: string;
+  label: string;
+  placeholder?: string;
+}
+
+export interface ConversionPopupProps {
+  convertedCode: string
+  usedModel: string | null
+  onClose: () => void
+}

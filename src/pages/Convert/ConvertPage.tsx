@@ -57,7 +57,6 @@ export default function ConvertPage() {
         description: `Converted using ${conversionType}`,
       })
     } catch (error) {
-      // Enhanced error logging
       console.error('Conversion error:', {
         conversionType,
         error: error instanceof Error ? error.message : 'Unknown error',
