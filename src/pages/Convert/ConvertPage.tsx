@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { convertCode } from "@/lib/api"
 import { ConversionType } from "@/lib/types"
 import { ConversionPopup } from "./ConversionPopup"
+import CodeEditor from '@uiw/react-textarea-code-editor';
+import rehypePrism from "rehype-prism-plus";
 
 const ACCENT = "#9333EA"
 
@@ -108,11 +110,21 @@ export default function ConvertPage() {
         <div className="grid gap-6 md:grid-cols-[1fr_auto]">
           <div className="space-y-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <Textarea
+              <CodeEditor
+                language="ts"
                 placeholder="Paste your code here..."
-                className="relative min-h-[600px] font-mono border-b"
-                style={{ borderColor: ACCENT }}
+                className="relative min-h-[600px] font-mono border-b rounded-md "
+                rehypePlugins={[
+                   [rehypePrism, { ignoreMissing: true }]
+                ]}
+                style={{ 
+                  borderColor: ACCENT, 
+                  fontSize: 16,
+                  
+                  backgroundColor: "rgba(108, 1, 230, 0.35)",
+                  fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace', }}
                 value={code}
+                padding={18}
                 onChange={(e) => setCode(e.target.value)}
               />
             </motion.div>
