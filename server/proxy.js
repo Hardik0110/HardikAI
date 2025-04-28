@@ -8,7 +8,7 @@ import analyzeRouter from './routes/analyze.js';
 import convertRouter from './routes/convert.js';
 import standupRouter from './routes/standup.js';
 
-const { json, urlencoded } = bodyParser;
+const { json, urlencoded } = bodyParser;    
 const app = express();
 
 app.use(json({ limit: '2mb' }));

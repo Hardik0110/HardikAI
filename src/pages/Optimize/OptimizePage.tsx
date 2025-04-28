@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
 import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
@@ -8,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { optimizeCode } from "@/lib/api"
 import { OptimizationType } from "@/lib/types"
 import { X } from "lucide-react"
+import CodeEditor from '@uiw/react-textarea-code-editor';
+import rehypePrism from "rehype-prism-plus";
 
 const ACCENT = "#08D9D6"
 
@@ -71,6 +72,8 @@ export default function OptimizePage() {
     }
   }
 
+ 
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -107,11 +110,20 @@ export default function OptimizePage() {
         <div className="grid gap-6 md:grid-cols-[1fr_auto]">
           <div className="space-y-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <Textarea
+              <CodeEditor
+                language="js"
                 placeholder="Paste your code here..."
-                className="relative min-h-[600px] font-bold border-b"
-                style={{ borderColor: ACCENT }}
+                className="relative min-h-[600px] font-bold border-b rounded-md"
+                rehypePlugins={[
+                  [rehypePrism, { ignoreMissing: true }]
+                ]}
+                style={{
+                  fontSize: 16,
+                  backgroundColor: "rgba(12, 224, 135, 0.91)",
+                  fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                }}
                 value={code}
+                padding={18}
                 onChange={(e) => setCode(e.target.value)}
               />
             </motion.div>
