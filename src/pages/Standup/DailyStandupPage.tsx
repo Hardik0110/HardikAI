@@ -6,7 +6,6 @@ import { generateStandup } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { StandupResult } from '@/lib/types'
 import { FileText } from 'lucide-react'
-import { DashboardLayout } from '@/components/DashboardLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { StandupPopup } from './StandupPopup'
@@ -98,7 +97,6 @@ export default function DailyStandupPage() {
   };
 
   return (
-    <DashboardLayout>
       <motion.div className="container relative mx-auto py-8 px-4">
         <BackgroundImages />
 
@@ -155,6 +153,5 @@ export default function DailyStandupPage() {
           )}
         </AnimatePresence>
       </motion.div>
-    </DashboardLayout>
   );
 }

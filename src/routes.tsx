@@ -8,6 +8,7 @@ import OptimizePage from "@/pages/Optimize/OptimizePage"
 import AnalyzePage from "@/pages/Analyze/AnalyzePage"
 import ConvertPage from "@/pages/Convert/ConvertPage"
 import DailyStandupPage from "@/pages/Standup/DailyStandupPage"
+import { DashboardLayout } from "./components/DashboardLayout"
 
 function Router() {
   const location = useLocation()
@@ -18,11 +19,13 @@ function Router() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<IntroductionPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/optimize" element={<OptimizePage />} />
-          <Route path="/analyze" element={<AnalyzePage />} />
-          <Route path="/convert" element={<ConvertPage />} />
-          <Route path="/standup" element={<DailyStandupPage />} />
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/optimize" element={<OptimizePage />} />
+            <Route path="/analyze" element={<AnalyzePage />} />
+            <Route path="/convert" element={<ConvertPage />} />
+            <Route path="/standup" element={<DailyStandupPage />} />
+          </Route>
         </Routes>
       </AnimatePresence>
       <Toaster />

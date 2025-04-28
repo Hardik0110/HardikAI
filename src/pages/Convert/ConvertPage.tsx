@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
 import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
 import { motion, AnimatePresence } from "framer-motion"
@@ -80,7 +79,6 @@ export default function ConvertPage() {
   }
 
   return (
-    <DashboardLayout>
       <div className="container mx-auto ">
         <motion.img
           src="../src/assets/ConvertRobot.png"
@@ -161,6 +159,5 @@ export default function ConvertPage() {
           )}
         </AnimatePresence>
       </div>
-    </DashboardLayout>
   )
 }

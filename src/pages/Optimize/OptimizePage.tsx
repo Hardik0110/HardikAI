@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
 import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
 import { motion, AnimatePresence } from "framer-motion"
@@ -75,7 +74,6 @@ export default function OptimizePage() {
  
 
   return (
-    <DashboardLayout>
       <div className="container mx-auto py-6">
       <motion.img
             src="../src/assets/AIrobot.png"
@@ -190,6 +188,5 @@ export default function OptimizePage() {
           )}
         </AnimatePresence>
       </div>
-    </DashboardLayout>
   )
 }

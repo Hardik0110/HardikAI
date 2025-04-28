@@ -1,16 +1,11 @@
-import type { ReactNode } from "react"
-import { Link } from "react-router-dom"
+import { Link, Outlet } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { DashboardNav } from "@/components/Header"
 import { Breadcrumbs } from "@/components/BreadCrumbs"
 import { motion } from "framer-motion"
 import { LightPullThemeSwitcher } from "@/components/ui/light-pull-theme-switcher"
 
-interface DashboardLayoutProps {
-  children: ReactNode
-}
-
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <header className="shrink-0 sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
@@ -56,7 +51,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         <div className="container px-4 pt-6 pb-4 flex flex-col items-center">
-          {children}
+          <Outlet />
         </div>
       </motion.main>
     </div>

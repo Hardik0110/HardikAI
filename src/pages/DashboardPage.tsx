@@ -2,7 +2,6 @@ import { Link } from "react-router-dom"
 import { CodeIcon, LineChart, FileCode, Speech } from "lucide-react" 
 import { motion } from "framer-motion"
 import { PixelCanvas } from "@/components/ui/pixel-canvas"
-import { DashboardLayout } from "@/components/DashboardLayout"
 import { CardVariants } from "@/lib/types"
 
 const cardVariants: CardVariants = {
@@ -58,7 +57,6 @@ const cardConfig = [
 
 export default function DashboardPage() {
   return (
-    <DashboardLayout>
       <div className="relative container mx-auto px-4">
         <div className="relative flex items-center justify-center mt-6">
           {backgroundImages.map((img, index) => (
@@ -101,6 +99,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   )
 }

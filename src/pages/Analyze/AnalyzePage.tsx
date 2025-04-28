@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { analyzeStock } from "@/lib/api";
@@ -80,7 +79,6 @@ export default function AnalyzePage() {
   };
 
   return (
-    <DashboardLayout>
       <div className="container mx-auto py-2">
         <div className="inset-0">
           <motion.img
@@ -152,6 +150,5 @@ export default function AnalyzePage() {
           )}
         </AnimatePresence>
       </div>
-    </DashboardLayout>
   );
 }
