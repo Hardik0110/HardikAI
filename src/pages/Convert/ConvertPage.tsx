@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Textarea } from "@/components/ui/textarea"
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { useToast } from "@/hooks/use-toast"
 import { CodeOptimizeButton } from "@/components/CodeOptimizeButton"
@@ -28,7 +27,6 @@ export default function ConvertPage() {
       })
       return
     }
-
     setIsConverting(true)
 
     try {

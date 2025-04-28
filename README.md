@@ -1,2 +1,6 @@
-To start the server first run this command in the terminal :- cd server  ->  node proxy.js
-Then to run the frontend of the project run this command in new terminal but do not close the first server terminal :- yarn dev
+
+> First, open a terminal and run the following commands to start the server:  
+> `cd server` → `node proxy.js`  
+>   
+> Then, open a new terminal (without closing the first one) and run the following command to start the frontend:  
+> `yarn dev`
