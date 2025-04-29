@@ -82,7 +82,7 @@ export default function AnalyzePage() {
       <div className="container mx-auto py-2">
         <div className="inset-0">
           <motion.img
-            src="../src/assets/RedAlien.png"
+            src="../assets/RedAlien.png"
             alt=""
             className="absolute left-20 top-1/2  w-120 h-120 lg:block hidden "
             initial={{ opacity: 0, x: -100 }}
@@ -90,7 +90,7 @@ export default function AnalyzePage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
           <motion.img
-            src="../src/assets/Sparrow.png"
+            src="../assets/Sparrow.png"
             alt=""
             className="absolute right-40 top-1/2 w-240 h-240 lg:block hidden "
             initial={{ opacity: 0, x: 100 }}

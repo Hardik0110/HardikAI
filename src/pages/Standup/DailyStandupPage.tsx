@@ -13,12 +13,12 @@ import { StandupPopup } from './StandupPopup'
 function BackgroundImages() {
   const imageConfig = [
     {
-      src: "../src/assets/fox.png",
+      src: "../assets/fox.png",
       className: "absolute left-0 bottom-0 w-80 h-120 opacity-50 lg:block hidden transform -translate-x-1/4 translate-y-1/4",
       initialX: -100
     },
     {
-      src: "../src/assets/alien.png",
+      src: "../assets/alien.png",
       className: "absolute right-0 bottom-0 w-70 h-100 opacity-50 lg:block hidden transform translate-x-1/4 translate-y-1/4",
       initialX: 100
     }

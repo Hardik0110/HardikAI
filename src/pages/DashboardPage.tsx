@@ -14,10 +14,10 @@ const cardVariants: CardVariants = {
 }
 
 const backgroundImages = [
-  { src: "../src/assets/optimize.png", position: "left-16 -top-12" },
-  { src: "../src/assets/analyze.png", position: "right-16 -top-10" },
-  { src: "../src/assets/dailystandup.png", position: "right-20 -bottom-10", maxWidth: "31vw" },
-  { src: "../src/assets/convert.png", position: "left-16 -bottom-20", maxWidth: "31vw" }
+  { src: "../assets/optimize.png", position: "left-16 -top-12" },
+  { src: "../assets/analyze.png", position: "right-16 -top-10" },
+  { src: "../assets/dailystandup.png", position: "right-20 -bottom-10", maxWidth: "31vw" },
+  { src: "../assets/convert.png", position: "left-16 -bottom-20", maxWidth: "31vw" }
 ]
 
 const cardConfig = [
@@ -64,7 +64,7 @@ export default function DashboardPage() {
               key={index}
               src={img.src}
               alt=""
-              className={`fixed ${img.position} w-[600px] h-[600px] opacity-70 lg:block hidden pointer-events-none`}
+              className={`fixed ${img.position} w-[600px] h-[600px] opacity-70 lg:block hidden pointer-events`}
               style={{ maxWidth: img.maxWidth || '30vw' }}
               initial={{ opacity: 0, x: 0 }}
               animate={{ opacity: 0.7, x: 0 }}

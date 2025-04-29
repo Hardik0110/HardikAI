@@ -285,3 +285,30 @@
   }
 }
 
+/* Add to your global CSS file */
+.w-tc-editor {
+  overflow: auto !important;
+  max-height: 600px !important;
+}
+
+.w-tc-editor-text {
+  min-height: 600px;
+}
+
+/* Custom scrollbar styling */
+.w-tc-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.w-tc-editor::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.w-tc-editor::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.w-tc-editor::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

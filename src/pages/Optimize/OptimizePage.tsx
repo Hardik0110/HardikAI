@@ -7,7 +7,7 @@ import { optimizeCode } from "@/lib/api"
 import { OptimizationType } from "@/lib/types"
 import { X } from "lucide-react"
 import CodeEditor from '@uiw/react-textarea-code-editor';
-import rehypePrism from "rehype-prism-plus";
+
 
 const ACCENT = "#08D9D6"
 
@@ -76,7 +76,7 @@ export default function OptimizePage() {
   return (
       <div className="container mx-auto py-6">
       <motion.img
-            src="../src/assets/AIrobot.png"
+            src="../assets/AIrobot.png"
             alt=""
             className="absolute left-0  w-56 h-80 opacity-50 lg:block hidden transform -translate-x-1/4 translate-y-1/4"
             initial={{ opacity: 0, x: -100 }}
@@ -106,20 +106,21 @@ export default function OptimizePage() {
         </motion.h1>
 
         <div className="grid gap-6 md:grid-cols-[1fr_auto]">
-          <div className="space-y-4">
+          <div className="space-y-4 ">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <CodeEditor
                 language="js"
                 placeholder="Paste your code here..."
-                className="relative min-h-[600px] font-bold border-b rounded-md"
-                rehypePlugins={[
-                  [rehypePrism, { ignoreMissing: true }]
-                ]}
+                className="relative h-[600px] overflow-y-auto font-bold border-b rounded-md"
+                data-color-mode="light"
                 style={{
                   fontSize: 16,
                   backgroundColor: "rgba(12, 224, 135, 0.91)",
                   fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                  height: '600px',
+                  overflowY: 'auto',
                 }}
+                minHeight={600}
                 value={code}
                 padding={18}
                 onChange={(e) => setCode(e.target.value)}

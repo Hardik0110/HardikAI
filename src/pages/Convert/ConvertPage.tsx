@@ -81,7 +81,7 @@ export default function ConvertPage() {
   return (
       <div className="container mx-auto ">
         <motion.img
-          src="../src/assets/ConvertRobot.png"
+          src="../assets/ConvertRobot.png"
           alt=""
           className="absolute left-0  w-52 h-80  lg:block hidden transform -translate-x-1/4"
           initial={{ opacity: 0, x: -100 }}
