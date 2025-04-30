@@ -54,15 +54,19 @@ export default function AnalyzePage() {
       const result = await analyzeStock(cleanData);
       
       console.log('Analysis API Response:', {
-        technicalTrends: result.technicalTrends,
-        volumePatterns: result.volumePatterns,
+        technicalAnalysis: result.technicalAnalysis,
+        marketTrends: result.marketTrends,
         supportResistance: result.supportResistance,
-        shortTermOutlook: result.shortTermOutlook,
-        stopLoss: result.stopLoss
+        stopLoss: result.stopLoss,
+        outlook: result.outlook,
+        usedModel: result.usedModel
       });
 
       setAnalysisResult(result);
-      toast({ title: "Analysis complete", description: "Stock analysis has been successfully generated" });
+      toast({ 
+        title: "Analysis complete", 
+        description: "Stock analysis has been successfully generated" 
+      });
     } catch (error) {
       console.error("Analysis error:", {
         message: error instanceof Error ? error.message : "Unknown error",

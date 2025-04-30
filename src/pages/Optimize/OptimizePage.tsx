@@ -84,7 +84,7 @@ export default function OptimizePage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
           <motion.img
-            src="../src/assets/Hero.png"
+            src="../assets/Hero.png"
             alt=""
             className="absolute right-40 bottom-0 w-56 h-80 opacity-50 lg:block hidden transform -translate-x-1/4 translate-y-1/4"
             initial={{ opacity: 0, x: -100 }}

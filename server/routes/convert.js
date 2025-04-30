@@ -1,7 +1,40 @@
 import { Router } from 'express';
 
-export default function (openai, AI_MODELS) {
+export default function(OPENROUTER_CONFIG, AI_MODELS) {
   const router = Router();
+
+  async function tryConvert(code, systemPrompt, modelConfig) {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
+          'HTTP-Referer': OPENROUTER_CONFIG.referer,
+          'X-Title': OPENROUTER_CONFIG.appName
+        },
+        body: JSON.stringify({
+          model: modelConfig.name,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: code }
+          ],
+          temperature: modelConfig.temperature,
+          max_tokens: modelConfig.maxTokens
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || null;
+    } catch (error) {
+      console.error(`Error with model ${modelConfig.name}:`, error);
+      return null;
+    }
+  }
 
   router.post('/', async (req, res) => {
     const { code, conversionType } = req.body;
@@ -10,74 +43,24 @@ export default function (openai, AI_MODELS) {
     }
 
     const [from, to] = conversionType.split('-to-');
-    if (!from || !to) {
-      return res.status(400).json({ error: 'Invalid conversionType format' });
-    }
+    const systemPrompt = `Convert this ${from} code to ${to}. Return ONLY the converted code.`;
 
-    const systemPrompt = `You are a code converter that converts code from ${from} to ${to}.
-                            Instructions:
-                            1. Convert the provided code to ${to}
-                            2. Return ONLY the converted code without any explanations
-                            3. Do not include backticks, language identifiers, or any other text
-                            4. Maintain the same functionality as the original code
-                            5. Use idiomatic ${to} patterns and best practices
-                            6. Include necessary imports/dependencies`;
+    let convertedCode = null;
+    let usedModel = null;
 
-    let converted = null, usedModel = null;
     for (const model of AI_MODELS) {
-      try {
-        const { choices } = await openai.chat.completions.create({
-          model,
-          messages: [
-            { 
-              role: 'system', 
-              content: systemPrompt 
-            },
-            { 
-              role: 'user', 
-              content: `Convert this ${from} code to ${to}:\n\n${code}` 
-            },
-            {
-              role: 'assistant',
-              content: `I will convert the code to ${to} following the exact requirements.`
-            }
-          ],
-          temperature: 0.2, 
-          max_tokens: 2048,
-          presence_penalty: -0.5, 
-          frequency_penalty: 0.0
-        });
-
-        const content = choices[0].message.content.trim();
-        
-        const cleanedContent = content
-          .replace(/^```[\w-]*\n?|```$/gm, '') 
-          .replace(/^Here's the converted code:?\s*/i, '') 
-          .replace(/^Converting to[\s\S]*?:\s*/i, '') 
-          .trim();
-
-        if (cleanedContent && !cleanedContent.toLowerCase().includes('here') && !cleanedContent.toLowerCase().includes('improve')) {
-          converted = cleanedContent;
-          usedModel = model;
-          break;
-        }
-      } catch (error) {
-        console.error(`Error with model ${model}:`, error);
-        continue;
+      convertedCode = await tryConvert(code, systemPrompt, model);
+      if (convertedCode) {
+        usedModel = model.name;
+        break;
       }
     }
 
-    if (!converted) {
-      return res.status(500).json({ 
-        error: 'Code conversion failed', 
-        details: 'All models failed to provide valid conversion' 
-      });
+    if (!convertedCode) {
+      return res.status(500).json({ error: 'Failed to convert code' });
     }
 
-    res.json({ 
-      convertedCode: converted, 
-      usedModel 
-    });
+    res.json({ convertedCode, usedModel });
   });
 
   return router;

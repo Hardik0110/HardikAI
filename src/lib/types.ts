@@ -67,15 +67,12 @@ export interface StockAnalysisInput {
 }
 
 export interface AnalysisResult {
-  text?: string;
-  technicalTrends: string;
-  volumePatterns: string;
-  supportResistance: {
-    support: number;
-    resistance: number;
-  };
-  shortTermOutlook: string;
-  stopLoss: number;
+  technicalAnalysis: string;
+  marketTrends: string;
+  supportResistance: string;
+  stopLoss: string;
+  outlook: string;
+  usedModel?: string;
 }
 
 export type ConversionType = 
@@ -131,6 +128,7 @@ export interface StandupFormattedResponse extends StandupResult {
 export interface OptimizeRequest {
   code: string;
   optimizationType: OptimizationType;
+  model?: string;
 }
 
 export interface ConvertRequest {

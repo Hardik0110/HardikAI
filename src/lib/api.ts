@@ -12,13 +12,14 @@ import {
 export const API_CONFIG = {
   baseURL: "http://localhost:3001/v1",
   models: [
-    "Meta-Llama-3.3-70B-Instruct-Turbo",
-    "claude-3-5-sonnet-20240620",
-    "gpt-4o-2024-05-13",
-    "deepseek-r1",
-    "deepseek-v3",
+    "deepseek/deepseek-r1-zero:free",
+    "open-r1/olympiccoder-32b:free",
+    "mistralai/mistral-small-3.1-24b-instruct",
+    "qwen/qwq-32b:free",
+    "anthropic/claude-3-opus",
+    "openai/gpt-4-turbo"
   ],
-  maxRequestSize: 1024 * 1024 
+  maxRequestSize: 5 * 1024 * 1024 // Updated to 5MB to match server
 };
 
 export async function optimizeCode(request: OptimizeRequest): Promise<OptimizeResponse> {
@@ -27,16 +28,42 @@ export async function optimizeCode(request: OptimizeRequest): Promise<OptimizeRe
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify(request),
+      credentials: 'include', // Add this line
+      body: JSON.stringify({
+        code: request.code,
+        options: {
+          increaseReadability: request.optimizationType === 'readability',
+          useHighLevelFunctions: request.optimizationType === 'hooks',
+          optimizeImports: request.optimizationType === 'linting',
+          improveNaming: true
+        }
+      }),
     });
 
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.details || 'Failed to optimize code');
+      let errorMessage = 'Failed to optimize code';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.details || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Error parsing error response:', e);
+      }
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    try {
+      const data = JSON.parse(responseText);
+      return {
+        optimizedCode: data.optimizedCode,
+        usedModel: data.usedModel || 'unknown'
+      };
+    } catch (e) {
+      throw new Error(`Invalid JSON response: ${responseText}`);
+    }
   } catch (error) {
     console.error('API error:', error);
     throw error;
@@ -49,33 +76,65 @@ export async function analyzeStock(data: StockAnalysisInput): Promise<AnalysisRe
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.details || 'Failed to analyze stock');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to analyze stock';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.details || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Error parsing error response:', e);
+      }
+      throw new Error(errorMessage);
     }
 
-    const responseData = await response.json();
+    const responseText = await response.text();
+    let responseData;
     
-    if (!responseData.technicalTrends || !responseData.volumePatterns || 
-        !responseData.supportResistance || !responseData.shortTermOutlook || 
-        typeof responseData.stopLoss !== 'number') {
-      throw new Error('Invalid analysis response format');
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response:', responseText);
+      throw new Error('Invalid JSON response from server');
+    }
+
+    // Validate all required fields exist
+    const requiredFields = [
+      'technicalAnalysis',
+      'marketTrends',
+      'supportResistance',
+      'stopLoss',
+      'outlook'
+    ];
+
+    const missingFields = requiredFields.filter(field => !responseData[field]);
+    
+    if (missingFields.length > 0) {
+      console.error('Missing fields in response:', {
+        missingFields,
+        receivedData: responseData
+      });
+      throw new Error(`Invalid analysis response format. Missing: ${missingFields.join(', ')}`);
     }
 
     return {
-      technicalTrends: responseData.technicalTrends,
-      volumePatterns: responseData.volumePatterns,
+      technicalAnalysis: responseData.technicalAnalysis,
+      marketTrends: responseData.marketTrends,
       supportResistance: responseData.supportResistance,
-      shortTermOutlook: responseData.shortTermOutlook,
       stopLoss: responseData.stopLoss,
-      text: responseData.analysisText || null
+      outlook: responseData.outlook,
+      usedModel: responseData.usedModel || 'unknown'
     };
   } catch (error) {
-    console.error('API error:', error);
+    console.error('API error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 }
