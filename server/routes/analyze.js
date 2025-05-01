@@ -1,9 +1,16 @@
 import { Router } from 'express';
+import { makeOpenRouterRequest, tryMultipleModels } from '../utils.js';
 
 export default function(OPENROUTER_CONFIG, AI_MODELS) {
   const router = Router();
 
-  async function tryAnalyze(data, modelConfig) {
+  function extractSection(text, sectionName) {
+    const regex = new RegExp(`${sectionName}:(.+?)(?=(?:[12345]\.|$))`, 's');
+    const match = text.match(regex);
+    return match ? match[1].trim() : '';
+  }
+
+  async function processAnalysis(modelConfig, data) {
     const systemPrompt = `You are a professional Indian stock market analyst. Analyze this stock and provide the following details:
       1. Technical Analysis: Key technical indicators and patterns
       2. Market Trends: Current trend direction and strength
@@ -21,53 +28,25 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
 
       Provide detailed insights for each section.`;
 
-    try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
-          'HTTP-Referer': OPENROUTER_CONFIG.referer,
-          'X-Title': OPENROUTER_CONFIG.appName
-        },
-        body: JSON.stringify({
-          model: modelConfig.name,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: 'Analyze this stock with detailed insights for each section.' }
-          ],
-          temperature: 0.7, // Increased for more natural language
-          max_tokens: modelConfig.maxTokens
-        })
-      });
+    const result = await makeOpenRouterRequest(
+      OPENROUTER_CONFIG, 
+      modelConfig, 
+      systemPrompt, 
+      'Analyze this stock with detailed insights for each section.'
+    );
+    
+    if (!result) return null;
+    
+    const analysis = result.choices[0].message.content;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const analysis = result.choices[0].message.content;
-
-      // Parse the analysis into sections
-      const sections = {
-        technicalAnalysis: extractSection(analysis, "Technical Analysis"),
-        marketTrends: extractSection(analysis, "Market Trends"),
-        supportResistance: extractSection(analysis, "Support/Resistance"),
-        stopLoss: extractSection(analysis, "Stop Loss"),
-        outlook: extractSection(analysis, "Overall Outlook")
-      };
-
-      return sections;
-    } catch (error) {
-      console.error(`Error with model ${modelConfig.name}:`, error);
-      return null;
-    }
-  }
-
-  function extractSection(text, sectionName) {
-    const regex = new RegExp(`${sectionName}:(.+?)(?=(?:[12345]\.|$))`, 's');
-    const match = text.match(regex);
-    return match ? match[1].trim() : '';
+    // Parse the analysis into sections
+    return {
+      technicalAnalysis: extractSection(analysis, "Technical Analysis"),
+      marketTrends: extractSection(analysis, "Market Trends"),
+      supportResistance: extractSection(analysis, "Support/Resistance"),
+      stopLoss: extractSection(analysis, "Stop Loss"),
+      outlook: extractSection(analysis, "Overall Outlook")
+    };
   }
 
   router.post('/', async (req, res) => {
@@ -76,22 +55,24 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    let analysis = null;
-    let usedModel = null;
-
-    for (const model of AI_MODELS) {
-      analysis = await tryAnalyze(data, model);
-      if (analysis) {
-        usedModel = model.name;
-        break;
+    try {
+      const result = await tryMultipleModels(AI_MODELS, processAnalysis, data);
+      
+      if (!result) {
+        return res.status(500).json({ error: 'Failed to analyze stock' });
       }
-    }
 
-    if (!analysis) {
-      return res.status(500).json({ error: 'Failed to analyze stock' });
+      res.json(result);
+    } catch (error) {
+      console.error('API error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      res.status(500).json({ 
+        error: 'Error processing request', 
+        details: error.message 
+      });
     }
-
-    res.json({ ...analysis, usedModel });
   });
 
   return router;

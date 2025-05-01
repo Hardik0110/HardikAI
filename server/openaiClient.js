@@ -1,24 +1,40 @@
-import { OpenAI } from 'openai';
-
-export const openai = new OpenAI({
-  apiKey: "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",
-  baseURL: 'https://openrouter.ai/api/v1',
-});
-
-export const AI_MODELS = [
-  { name: "deepseek/deepseek-r1-zero:free", maxTokens: 2048, temperature: 0.3 },
-  { name: "open-r1/olympiccoder-32b:free", maxTokens: 2048, temperature: 0.3 },
-  { name: "tngtech/deepseek-r1t-chimera:free", maxTokens: 2048, temperature: 0.3 },
-  { name: "qwen/qwq-32b:free", maxTokens: 4096, temperature: 0.3 },
-  { name: "anthropic/claude-3-opus", maxTokens: 2048, temperature: 0.3 },
-  { name: "openai/gpt-4-turbo", maxTokens: 2048, temperature: 0.3 }
-];
+import 'dotenv/config';
 
 export const OPENROUTER_CONFIG = {
-  apiKey: "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",
-  baseURL: "https://openrouter.ai/api/v1",
-  referer: "https://github.com/Hardik0110/HardikAI",
-  appName: "Hardik's AI"
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  referer: process.env.APP_URL || 'http://localhost:3001',
+  appName: 'Hardiks AI'
 };
 
-
+export const AI_MODELS = [
+  {
+    name: "deepseek/deepseek-r1-zero:free",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
+    name: "open-r1/olympiccoder-32b:free",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
+    name: "mistralai/mistral-small-3.1-24b-instruct",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
+    name: "qwen/qwq-32b:free",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
+    name: "anthropic/claude-3-opus",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
+    name: "openai/gpt-4-turbo",
+    temperature: 0.2,
+    maxTokens: 4000
+  }
+];

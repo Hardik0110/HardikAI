@@ -1,9 +1,10 @@
 import { Router } from 'express';
+import { makeOpenRouterRequest, tryMultipleModels } from '../utils.js';
 
 export default function(OPENROUTER_CONFIG, AI_MODELS) {
   const router = Router();
 
-  async function tryOptimize(code, systemPrompt, modelConfig) {
+  async function processOptimize(modelConfig, code, systemPrompt) {
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -19,8 +20,8 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
             { role: 'system', content: systemPrompt },
             { role: 'user', content: code }
           ],
-          temperature: modelConfig.temperature,
-          max_tokens: modelConfig.maxTokens
+          temperature: modelConfig.temperature || 0.3,
+          max_tokens: modelConfig.maxTokens || 4000
         })
       });
 
@@ -28,43 +29,77 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || null;
+      const result = await response.json();
+      const optimizedCode = result.choices?.[0]?.message?.content;
+
+      if (!optimizedCode) {
+        console.error('No optimized code in response:', result);
+        return null;
+      }
+
+      return { 
+        optimizedCode,
+        usedModel: modelConfig.name
+      };
     } catch (error) {
-      console.error(`Error with model ${modelConfig.name}:`, error);
+      console.error(`Error optimizing with ${modelConfig.name}:`, error);
       return null;
     }
   }
 
   router.post('/', async (req, res) => {
-    const { code, options } = req.body;
+    const { code, optimizationType } = req.body;
     if (!code) {
       return res.status(400).json({ error: 'No code provided' });
     }
 
-    const systemPrompt = `You are an expert code optimizer. ${
-      options?.increaseReadability ? 'Improve readability. ' : ''
-    }${options?.useHighLevelFunctions ? 'Use modern functions and hooks. ' : ''
-    }${options?.optimizeImports ? 'Organize and optimize imports. ' : ''
-    }${options?.improveNaming ? 'Improve variable and function naming. ' : ''
-    }Return only the optimized code without explanations.`;
+    const systemPrompt = `You are an expert code optimizer. Your task is to optimize the given code.
+    
+    If optimizationType is:
+    - hooks: Modernize code using latest React hooks and patterns
+    - readability: Improve code readability with better formatting and structure
+    - linting: Fix code style and potential issues
+    - bugs: Identify and fix potential bugs
 
-    let optimizedCode = null;
-    let usedModel = null;
+    Current optimization type: ${optimizationType}
 
-    for (const model of AI_MODELS) {
-      optimizedCode = await tryOptimize(code, systemPrompt, model);
-      if (optimizedCode) {
-        usedModel = model.name;
-        break;
+    Rules:
+    1. Return ONLY the optimized code
+    2. Preserve core functionality
+    3. Add comments for significant changes
+    4. Use modern JavaScript/TypeScript features
+    5. Ensure code is complete and runnable
+
+    Original code to optimize:
+    ${code}`;
+
+    try {
+      const result = await tryMultipleModels(AI_MODELS, processOptimize, code, systemPrompt);
+      
+      if (!result || !result.optimizedCode) {
+        return res.status(500).json({ 
+          error: 'Failed to optimize code',
+          details: 'No valid optimization result received'
+        });
       }
-    }
 
-    if (!optimizedCode) {
-      return res.status(500).json({ error: 'Failed to optimize code' });
-    }
+      console.log('Optimization successful:', {
+        originalLength: code.length,
+        optimizedLength: result.optimizedCode.length,
+        usedModel: result.usedModel
+      });
 
-    res.json({ optimizedCode, usedModel });
+      res.json({ 
+        optimizedCode: result.optimizedCode, 
+        usedModel: result.usedModel 
+      });
+    } catch (error) {
+      console.error('API error:', error);
+      res.status(500).json({ 
+        error: 'Error processing request', 
+        details: error.message 
+      });
+    }
   });
 
   return router;

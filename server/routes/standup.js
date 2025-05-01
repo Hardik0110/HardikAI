@@ -3,33 +3,36 @@ import { Router } from 'express';
 export default function(OPENROUTER_CONFIG, AI_MODELS) {
   const router = Router();
 
-  async function tryStandup(data, modelConfig) {
-    const systemPrompt = `You are a precise daily standup generator for a frontend engineer. Based on structured input, you must generate a clean, concise daily standup report in this strict format.
-
-1. Divide tasks across 8 hours.
-2. If any task exceeds 2 hours, break it into subtasks with durations.
-3. Include only relevant content, avoid unnecessary descriptions.
-4. Structure your output in this exact markdown format:
-
-**Yesterday's Progress**  
-- **[Task Title] ([Total Time]h)**  
-  - [Subtask if any]. ([Duration]h)  
-  - [Subtask if any]. ([Duration]h)  
-
-**Learnings & Insights**  
-- [Insight #1]. ([Duration]h)  
-- [Insight #2]. ([Duration]h)  
-
-**Blockers**  
-- [If none, say “No major blockers.”]  
-
-**Today's Plan**  
-- [Brief one-liner of today’s goal, no duration.]
-
-Only output the markdown standup text — no extra commentary or explanations. Your responses must match the user's past style exactly.
-`;
-
+  async function processStandup(modelConfig, data) {
     try {
+      const systemPrompt = `You are a precise daily standup generator for a frontend engineer. Generate a clean, concise daily standup report in markdown format.
+
+Rules:
+1. Each task must have a duration
+2. Break down tasks over 2 hours into subtasks
+3. Total duration should not exceed 8 hours
+4. Include only relevant technical details
+
+Format your response exactly like this:
+
+**Yesterday's Progress**
+- Task 1 (Xh)
+  - Subtask A (Yh)
+  - Subtask B (Zh)
+- Task 2 (Xh)
+
+**Learnings & Insights**
+- Key learning point 1
+- Key learning point 2
+
+**Blockers**
+- List any blockers (or "No major blockers")
+
+**Today's Plan**
+- Main goal/task for today
+
+Keep the response focused and technical.`;
+
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -44,8 +47,8 @@ Only output the markdown standup text — no extra commentary or explanations. Y
             { role: 'system', content: systemPrompt },
             { role: 'user', content: typeof data === 'string' ? data : JSON.stringify(data.tasks) }
           ],
-          temperature: modelConfig.temperature,
-          max_tokens: modelConfig.maxTokens
+          temperature: 0.3,
+          max_tokens: 2000
         })
       });
 
@@ -54,6 +57,12 @@ Only output the markdown standup text — no extra commentary or explanations. Y
       }
 
       const result = await response.json();
+      
+      if (!result.choices?.[0]?.message?.content) {
+        console.error('Invalid response structure:', result);
+        throw new Error('Invalid response from AI model');
+      }
+
       return {
         formattedText: result.choices[0].message.content,
         usedModel: modelConfig.name
@@ -67,20 +76,45 @@ Only output the markdown standup text — no extra commentary or explanations. Y
   router.post('/', async (req, res) => {
     try {
       const data = req.body;
-      let standup = null;
+      
+      if (!data) {
+        return res.status(400).json({ error: 'No input provided' });
+      }
 
+      let result = null;
+      let error = null;
+
+      // Try each model until we get a result
       for (const model of AI_MODELS) {
-        standup = await tryStandup(data, model);
-        if (standup) break;
+        try {
+          result = await processStandup(model, data);
+          if (result?.formattedText) {
+            break;
+          }
+        } catch (e) {
+          error = e;
+          console.error(`Failed with model ${model.name}:`, e);
+          continue;
+        }
       }
 
-      if (!standup) {
-        return res.status(500).json({ error: 'Failed to generate standup' });
+      if (!result?.formattedText) {
+        throw error || new Error('Failed to generate standup with all available models');
       }
 
-      res.json(standup);
+      console.log('Successfully generated standup:', {
+        modelUsed: result.usedModel,
+        outputLength: result.formattedText.length,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json(result);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error('Standup generation failed:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate standup', 
+        details: error.message 
+      });
     }
   });
 

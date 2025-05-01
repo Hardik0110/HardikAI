@@ -41,7 +41,7 @@ export function ConversionPopup({ convertedCode, usedModel, onClose }: Conversio
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="outline"
-              className="w-full border-red-400 hover:border-red hover:bg-red-400"
+              className="w-full border-red-400 hover:border-red hover:bg-purple-400"
               onClick={() => {
                 navigator.clipboard.writeText(convertedCode)
                 toast({
@@ -53,7 +53,7 @@ export function ConversionPopup({ convertedCode, usedModel, onClose }: Conversio
               Copy to Clipboard
             </Button>
           </motion.div>
-          <Button onClick={onClose} className="w-full">
+          <Button onClick={onClose} className="w-full bg-[#C084FC]">
             Close
           </Button>
         </div>

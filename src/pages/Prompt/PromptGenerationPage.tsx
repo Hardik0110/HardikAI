@@ -8,16 +8,17 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import PromptPopup from "./PromptPopup";
+import { Sparkles, Type, Send } from "lucide-react";
 
 const PromptGenerationPage = () => {
   const { toast } = useToast();
   const [promptType, setPromptType] = useState("Select Prompt Type");
   const [userInput, setUserInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
+  const [generatedPrompt, setGeneratedPrompt] = useState(null);
 
   const handleSelect = (type: string) => setPromptType(type);
 
@@ -71,59 +72,102 @@ const PromptGenerationPage = () => {
   };
 
   return (
-    <motion.div
-      className="max-w-xl mx-auto p-4 space-y-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <h2 className="text-3xl font-semibold text-sky-600 text-center">Prompt Generator</h2>
-
-      <Card className="max-w-2xl mx-auto border-sky-400/20 shadow-lg bg-sky-600 p-8 space-y-6">
-        <Textarea 
-          placeholder="Enter your idea or task here..." 
-          className="min-h-[140px] w-full"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-        />
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="text-sky-600 border-sky-600 hover:bg-sky-500 hover:text-white w-full sm:w-auto">
-                {promptType}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleSelect("Short")}>
-                Short
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSelect("Detailed")}>
-                Detailed
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSelect("Precise")}>
-                Precise
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button 
-            className="bg-sky-600 hover:bg-sky-700 text-white border-sky-600 w-full sm:w-auto"
-            onClick={handleGenerate}
-            disabled={isGenerating}
+    <div className="min-h-screen  py-12">
+      <motion.div
+        className="max-w-3xl mx-auto px-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            {isGenerating ? "Generating..." : "Generate Prompt"}
-          </Button>
+            <h2 className="text-4xl font-bold text-sky-700 inline-flex items-center gap-2">
+              <Sparkles className="text-sky-500" size={32} />
+              Prompt Generator
+            </h2>
+          </motion.div>
+          <p className="text-sky-600 mt-2 max-w-lg mx-auto">
+            Transform your ideas into perfectly crafted prompts
+          </p>
         </div>
-      </Card>
 
-      {generatedPrompt && (
-        <PromptPopup
-          prompt={generatedPrompt}
-          onClose={() => setGeneratedPrompt(null)}
-        />
-      )}
-    </motion.div>
+        <Card className="border-sky-200 shadow-lg overflow-hidden bg-white">
+          <CardHeader className="bg-sky-600 text-white pb-4">
+            <CardTitle className="text-xl font-medium flex items-center gap-2">
+              <Type size={20} />
+              Create Your Prompt
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-sky-700">Your Idea or Task</label>
+                <Textarea
+                  placeholder="Describe what you want to generate a prompt for..."
+                  className="min-h-[140px] w-full border-sky-200 focus:border-sky-400 focus:ring-sky-400 transition-all resize-none"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="border-sky-300 text-sky-700 hover:bg-sky-50 w-full sm:w-auto"
+                    >
+                      {promptType}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white border-sky-200">
+                    <DropdownMenuItem 
+                      onClick={() => handleSelect("Short")}
+                      className="hover:bg-sky-50 hover:text-sky-700"
+                    >
+                      Short
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleSelect("Detailed")}
+                      className="hover:bg-sky-50 hover:text-sky-700"
+                    >
+                      Detailed
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleSelect("Precise")}
+                      className="hover:bg-sky-50 hover:text-sky-700"
+                    >
+                      Precise
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  className="bg-sky-600 hover:bg-sky-700 text-white w-full sm:w-auto"
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                >
+                  <Send size={18} className="mr-2" />
+                  {isGenerating ? "Generating..." : "Generate Prompt"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {generatedPrompt && (
+          <PromptPopup
+            prompt={generatedPrompt}
+            onClose={() => setGeneratedPrompt(null)}
+          />
+        )}
+      </motion.div>
+    </div>
   );
 };
 
