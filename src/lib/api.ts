@@ -19,7 +19,7 @@ export const API_CONFIG = {
     "anthropic/claude-3-opus",
     "openai/gpt-4-turbo"
   ],
-  maxRequestSize: 5 * 1024 * 1024 // Updated to 5MB to match server
+  maxRequestSize: 5 * 1024 * 1024 
 };
 
 export async function optimizeCode(request: OptimizeRequest): Promise<OptimizeResponse> {
@@ -30,7 +30,7 @@ export async function optimizeCode(request: OptimizeRequest): Promise<OptimizeRe
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      credentials: 'include', // Add this line
+      credentials: 'include', 
       body: JSON.stringify({
         code: request.code,
         options: {

@@ -5,10 +5,10 @@ import optimizeRoute from './routes/optimize.js';
 import convertRoute from './routes/convert.js';
 import analyzeRoute from './routes/analyze.js';
 import standupRoute from './routes/standup.js';
+import promptRoute from './routes/prompt.js'; 
 
 const app = express();
 
-// CORS Configuration
 const corsOptions = {
   origin: [
     'http://localhost:3000',
@@ -24,7 +24,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Body parser middleware
 app.use(express.json({ limit: '5mb' }));
 
 // Routes
@@ -32,6 +31,7 @@ app.use('/v1/optimize', optimizeRoute(OPENROUTER_CONFIG, AI_MODELS));
 app.use('/v1/convert', convertRoute(OPENROUTER_CONFIG, AI_MODELS));
 app.use('/v1/analyze', analyzeRoute(OPENROUTER_CONFIG, AI_MODELS));
 app.use('/v1/standup', standupRoute(OPENROUTER_CONFIG, AI_MODELS));
+app.use('/v1/prompt', promptRoute(OPENROUTER_CONFIG, AI_MODELS)); 
 
 // Health check
 app.get('/health', (req, res) => {

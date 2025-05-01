@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
-import { Code, FileCode, Home, LineChart, Speech } from "lucide-react"
+import { BotMessageSquare, Code, FileCode, Home, LineChart, Speech } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
@@ -39,6 +39,13 @@ const navItems = [
     icon: Speech, 
     color: "bg-amber-500",
     hoverColor: "hover:bg-amber-500/20 hover:text-amber-500"
+  },
+  { 
+    path: "/prompt", 
+    label: "Prompt", 
+    icon: BotMessageSquare, 
+    color: "bg-sky-600",
+    hoverColor: "hover:bg-sky-500/20 hover:text-sky-500"
   },
 ]
 

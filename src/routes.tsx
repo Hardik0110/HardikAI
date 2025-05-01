@@ -9,6 +9,7 @@ import AnalyzePage from "@/pages/Analyze/AnalyzePage"
 import ConvertPage from "@/pages/Convert/ConvertPage"
 import DailyStandupPage from "@/pages/Standup/DailyStandupPage"
 import { DashboardLayout } from "./components/DashboardLayout"
+import PromptGenerationPage from "./pages/Prompt/PromptGenerationPage"
 
 function Router() {
   const location = useLocation()
@@ -25,6 +26,7 @@ function Router() {
             <Route path="/analyze" element={<AnalyzePage />} />
             <Route path="/convert" element={<ConvertPage />} />
             <Route path="/standup" element={<DailyStandupPage />} />
+            <Route path="/prompt" element={<PromptGenerationPage />} />
           </Route>
         </Routes>
       </AnimatePresence>
