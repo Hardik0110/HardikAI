@@ -1,25 +1,25 @@
 "use client"
 
-// Сначала определяем класс Pixel
+import * as React from "react"
+
+// Оптимизированный класс Pixel
 class Pixel {
-  width: number
-  height: number
-  ctx: CanvasRenderingContext2D
-  x: number
-  y: number
-  color: string
-  speed: number
-  size: number
-  sizeStep: number
-  minSize: number
-  maxSizeInteger: number
-  maxSize: number
-  delay: number
-  counter: number
-  counterStep: number
-  isIdle: boolean
-  isReverse: boolean
-  isShimmer: boolean
+  private ctx: CanvasRenderingContext2D
+  private x: number
+  private y: number
+  private color: string
+  private speed: number
+  private size: number = 0
+  private sizeStep: number
+  private minSize: number = 0.5
+  private maxSize: number
+  private delay: number
+  private counter: number = 0
+  private counterStep: number
+  private isIdle: boolean = false
+  private isReverse: boolean = false
+  private isShimmer: boolean = false
+  private readonly maxSizeInteger: number = 2
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -30,31 +30,22 @@ class Pixel {
     speed: number,
     delay: number,
   ) {
-    this.width = canvas.width
-    this.height = canvas.height
     this.ctx = context
     this.x = x
     this.y = y
     this.color = color
     this.speed = this.getRandomValue(0.1, 0.9) * speed
-    this.size = 0
     this.sizeStep = Math.random() * 0.4
-    this.minSize = 0.5
-    this.maxSizeInteger = 2
     this.maxSize = this.getRandomValue(this.minSize, this.maxSizeInteger)
     this.delay = delay
-    this.counter = 0
-    this.counterStep = Math.random() * 4 + (this.width + this.height) * 0.01
-    this.isIdle = false
-    this.isReverse = false
-    this.isShimmer = false
+    this.counterStep = Math.random() * 4 + (canvas.width + canvas.height) * 0.01
   }
 
-  getRandomValue(min: number, max: number) {
+  private getRandomValue(min: number, max: number): number {
     return Math.random() * (max - min) + min
   }
 
-  draw() {
+  private draw(): void {
     const centerOffset = this.maxSizeInteger * 0.5 - this.size * 0.5
     this.ctx.fillStyle = this.color
     this.ctx.fillRect(
@@ -65,7 +56,17 @@ class Pixel {
     )
   }
 
-  appear() {
+  private shimmer(): void {
+    if (this.size >= this.maxSize) {
+      this.isReverse = true
+    } else if (this.size <= this.minSize) {
+      this.isReverse = false
+    }
+
+    this.size += this.isReverse ? -this.speed : this.speed
+  }
+
+  appear(): void {
     this.isIdle = false
 
     if (this.counter <= this.delay) {
@@ -86,38 +87,27 @@ class Pixel {
     this.draw()
   }
 
-  disappear() {
+  disappear(): void {
     this.isShimmer = false
     this.counter = 0
 
     if (this.size <= 0) {
       this.isIdle = true
       return
-    } else {
-      this.size -= 0.1
     }
-
+    
+    this.size -= 0.1
     this.draw()
   }
 
-  shimmer() {
-    if (this.size >= this.maxSize) {
-      this.isReverse = true
-    } else if (this.size <= this.minSize) {
-      this.isReverse = false
-    }
-
-    if (this.isReverse) {
-      this.size -= this.speed
-    } else {
-      this.size += this.speed
-    }
+  get idle(): boolean {
+    return this.isIdle
   }
 }
 
-// Затем определяем веб-компонент
+// Оптимизированный веб-компонент
 class PixelCanvasElement extends HTMLElement {
-  private canvas: HTMLCanvasElement
+  private canvas: HTMLCanvasElement = document.createElement("canvas")
   private ctx: CanvasRenderingContext2D | null
   private pixels: Pixel[] = []
   private animation: number | null = null
@@ -127,14 +117,20 @@ class PixelCanvasElement extends HTMLElement {
   private _initialized: boolean = false
   private _resizeObserver: ResizeObserver | null = null
   private _parent: Element | null = null
+  private _boundAppear: () => void
+  private _boundDisappear: () => void
+  private _nameElement: HTMLDivElement | null = null
 
   constructor() {
     super()
-    this.canvas = document.createElement("canvas")
     this.ctx = this.canvas.getContext("2d")
     this.reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches
+
+    // Создаем привязанные функции один раз
+    this._boundAppear = () => this.handleAnimation("appear")
+    this._boundDisappear = () => this.handleAnimation("disappear")
 
     const shadow = this.attachShadow({ mode: "open" })
     const style = document.createElement("style")
@@ -144,89 +140,133 @@ class PixelCanvasElement extends HTMLElement {
         inline-size: 100%;
         block-size: 100%;
         overflow: hidden;
+        position: relative;
+      }
+      .canvas-name {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        font-weight: bold;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        text-align: center;
+        z-index: 10;
       }
     `
+    
+    // Create name element
+    this._nameElement = document.createElement("div")
+    this._nameElement.className = "canvas-name"
+    
     shadow.appendChild(style)
     shadow.appendChild(this.canvas)
+    shadow.appendChild(this._nameElement)
   }
 
-  get colors() {
+  get colors(): string[] {
     return this.dataset.colors?.split(",") || ["#f8fafc", "#f1f5f9", "#cbd5e1"]
   }
 
-  get gap() {
+  get gap(): number {
     const value = Number(this.dataset.gap) || 5
     return Math.max(4, Math.min(50, value))
   }
 
-  get speed() {
+  get speed(): number {
     const value = Number(this.dataset.speed) || 35
     return this.reducedMotion ? 0 : Math.max(0, Math.min(100, value)) * 0.001
   }
 
-  get noFocus() {
+  get noFocus(): boolean {
     return this.hasAttribute("data-no-focus")
   }
 
-  get variant() {
+  get variant(): string {
     return this.dataset.variant || "default"
   }
+  
+  get name(): string | null {
+    return this.dataset.name || null
+  }
+  
+  get nameColor(): string {
+    return this.dataset.nameColor || "#ffffff"
+  }
 
-  connectedCallback() {
+  connectedCallback(): void {
     if (this._initialized) return
     this._initialized = true
     this._parent = this.parentElement
+    
+    // Update name element if name is provided
+    if (this.name && this._nameElement) {
+      this._nameElement.textContent = this.name
+      this._nameElement.style.color = this.nameColor
+    }
 
     requestAnimationFrame(() => {
       this.handleResize()
 
-      const ro = new ResizeObserver((entries) => {
-        if (!entries.length) return
+      this._resizeObserver = new ResizeObserver(() => {
         requestAnimationFrame(() => this.handleResize())
       })
-      ro.observe(this)
-      this._resizeObserver = ro
+      this._resizeObserver.observe(this)
     })
 
-    this._parent?.addEventListener("mouseenter", () =>
-      this.handleAnimation("appear"),
-    )
-    this._parent?.addEventListener("mouseleave", () =>
-      this.handleAnimation("disappear"),
-    )
+    // Add event listeners for mouse interaction
+    this._parent?.addEventListener("mouseenter", this._boundAppear)
+    this._parent?.addEventListener("mouseleave", this._boundDisappear)
+    
+    // Show/hide name on hover
+    if (this.name && this._nameElement) {
+      this._parent?.addEventListener("mouseenter", () => {
+        if (this._nameElement) {
+          this._nameElement.style.opacity = "1"
+        }
+      })
+      
+      this._parent?.addEventListener("mouseleave", () => {
+        if (this._nameElement) {
+          this._nameElement.style.opacity = "0"
+        }
+      })
+    }
 
     if (!this.noFocus) {
-      this._parent?.addEventListener(
-        "focus",
-        () => this.handleAnimation("appear"),
-        { capture: true },
-      )
-      this._parent?.addEventListener(
-        "blur",
-        () => this.handleAnimation("disappear"),
-        { capture: true },
-      )
+      this._parent?.addEventListener("focus", this._boundAppear, { capture: true })
+      this._parent?.addEventListener("blur", this._boundDisappear, { capture: true })
+      
+      // Show/hide name on focus
+      if (this.name && this._nameElement) {
+        this._parent?.addEventListener("focus", () => {
+          if (this._nameElement) {
+            this._nameElement.style.opacity = "1"
+          }
+        }, { capture: true })
+        
+        this._parent?.addEventListener("blur", () => {
+          if (this._nameElement) {
+            this._nameElement.style.opacity = "0"
+          }
+        }, { capture: true })
+      }
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this._initialized = false
     this._resizeObserver?.disconnect()
+    this._resizeObserver = null
 
-    this._parent?.removeEventListener("mouseenter", () =>
-      this.handleAnimation("appear"),
-    )
-    this._parent?.removeEventListener("mouseleave", () =>
-      this.handleAnimation("disappear"),
-    )
+    this._parent?.removeEventListener("mouseenter", this._boundAppear)
+    this._parent?.removeEventListener("mouseleave", this._boundDisappear)
 
     if (!this.noFocus) {
-      this._parent?.removeEventListener("focus", () =>
-        this.handleAnimation("appear"),
-      )
-      this._parent?.removeEventListener("blur", () =>
-        this.handleAnimation("disappear"),
-      )
+      this._parent?.removeEventListener("focus", this._boundAppear, { capture: true })
+      this._parent?.removeEventListener("blur", this._boundDisappear, { capture: true })
     }
 
     if (this.animation) {
@@ -237,7 +277,21 @@ class PixelCanvasElement extends HTMLElement {
     this._parent = null
   }
 
-  handleResize() {
+  attributeChangedCallback(name: string, newValue: string): void {
+    if (name === 'data-name' && this._nameElement) {
+      this._nameElement.textContent = newValue || ''
+    }
+    
+    if (name === 'data-name-color' && this._nameElement) {
+      this._nameElement.style.color = newValue || '#ffffff'
+    }
+  }
+  
+  static get observedAttributes(): string[] {
+    return ['data-name', 'data-name-color']
+  }
+
+  handleResize(): void {
     if (!this.ctx || !this._initialized) return
 
     const rect = this.getBoundingClientRect()
@@ -258,47 +312,48 @@ class PixelCanvasElement extends HTMLElement {
     this.createPixels()
   }
 
-  getDistanceToCenter(x: number, y: number) {
-    const dx = x - this.canvas.width / 2
-    const dy = y - this.canvas.height / 2
-    return Math.sqrt(dx * dx + dy * dy)
+  private getDistance(x: number, y: number, isIcon: boolean): number {
+    if (isIcon) {
+      // Расстояние до центра
+      const dx = x - this.canvas.width / 2
+      const dy = y - this.canvas.height / 2
+      return Math.sqrt(dx * dx + dy * dy)
+    } else {
+      // Расстояние до нижнего левого угла
+      const dx = x
+      const dy = this.canvas.height - y
+      return Math.sqrt(dx * dx + dy * dy)
+    }
   }
 
-  getDistanceToBottomLeft(x: number, y: number) {
-    const dx = x
-    const dy = this.canvas.height - y
-    return Math.sqrt(dx * dx + dy * dy)
-  }
-
-  createPixels() {
+  createPixels(): void {
     if (!this.ctx) return
     this.pixels = []
 
-    for (let x = 0; x < this.canvas.width; x += this.gap) {
-      for (let y = 0; y < this.canvas.height; y += this.gap) {
-        const color =
-          this.colors[Math.floor(Math.random() * this.colors.length)]
-        let delay = 0
-
-        if (this.variant === "icon") {
-          delay = this.reducedMotion ? 0 : this.getDistanceToCenter(x, y)
-        } else {
-          delay = this.reducedMotion ? 0 : this.getDistanceToBottomLeft(x, y)
-        }
+    const isIcon = this.variant === "icon"
+    const { width, height } = this.canvas
+    const gap = this.gap
+    const colors = this.colors
+    const colorsLength = colors.length
+    
+    for (let x = 0; x < width; x += gap) {
+      for (let y = 0; y < height; y += gap) {
+        const color = colors[Math.floor(Math.random() * colorsLength)]
+        const delay = this.reducedMotion ? 0 : this.getDistance(x, y, isIcon)
 
         this.pixels.push(
-          new Pixel(this.canvas, this.ctx, x, y, color, this.speed, delay),
+          new Pixel(this.canvas, this.ctx, x, y, color, this.speed, delay)
         )
       }
     }
   }
 
-  handleAnimation(name: "appear" | "disappear") {
+  handleAnimation(name: "appear" | "disappear"): void {
     if (this.animation) {
       cancelAnimationFrame(this.animation)
     }
 
-    const animate = () => {
+    const animate = (): void => {
       this.animation = requestAnimationFrame(animate)
 
       const timeNow = performance.now()
@@ -314,11 +369,11 @@ class PixelCanvasElement extends HTMLElement {
       let allIdle = true
       for (const pixel of this.pixels) {
         pixel[name]()
-        if (!pixel.isIdle) allIdle = false
+        if (!pixel.idle) allIdle = false
       }
 
       if (allIdle) {
-        cancelAnimationFrame(this.animation)
+        cancelAnimationFrame(this.animation!)
         this.animation = null
       }
     }
@@ -327,21 +382,25 @@ class PixelCanvasElement extends HTMLElement {
   }
 }
 
-// React-компонент обертка
-import * as React from "react"
-
+// Типы для React-компонента
 interface PixelCanvasAttributes {
   'data-gap'?: number;
   'data-speed'?: number;
   'data-colors'?: string;
   'data-variant'?: string;
   'data-no-focus'?: string;
+  'data-name'?: string;
+  'data-name-color'?: string;
 }
 
+// Fix for custom element TypeScript definition
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'pixel-canvas': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & PixelCanvasAttributes, HTMLElement>;
+      'pixel-canvas': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & PixelCanvasAttributes, 
+        HTMLElement
+      >;
     }
   }
 }
@@ -352,40 +411,41 @@ export interface PixelCanvasProps extends React.HTMLAttributes<HTMLDivElement> {
   colors?: string[]
   variant?: "default" | "icon"
   noFocus?: boolean
+  name?: string
+  nameColor?: string
 }
 
-const PixelCanvas = React.forwardRef<HTMLDivElement, PixelCanvasProps>(
-  ({ gap, speed, colors, variant, noFocus, style, ...props }, ref) => {
+// React-компонент
+const PixelCanvasComponent = 
+  ({ gap, speed, colors, variant, noFocus, name, nameColor, style, ...props }: PixelCanvasProps, ref: React.Ref<HTMLDivElement>) => {
     React.useEffect(() => {
-      // Регистрируем веб-компонент при первом рендере
-      if (typeof window !== "undefined") {
-        if (!customElements.get("pixel-canvas")) {
-          customElements.define("pixel-canvas", PixelCanvasElement)
-        }
+      if (typeof window !== "undefined" && !customElements.get("pixel-canvas")) {
+        customElements.define("pixel-canvas", PixelCanvasElement)
       }
     }, [])
 
-    return (
-      <pixel-canvas
-        ref={ref}
-        data-gap={gap}
-        data-speed={speed}
-        data-colors={colors?.join(",")}
-        data-variant={variant}
-        {...(noFocus && { "data-no-focus": "" })}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          width: '100%',
-          height: '100%',
-          ...style
-        }}
-        {...props}
-      />
-    )
+    // Need to use createElement to avoid TypeScript errors with custom elements
+    return React.createElement("pixel-canvas", {
+      ref,
+      "data-gap": gap,
+      "data-speed": speed,
+      "data-colors": colors?.join(","),
+      "data-variant": variant,
+      "data-name": name,
+      "data-name-color": nameColor,
+      ...(noFocus && { "data-no-focus": "" }),
+      style: {
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        width: '100%',
+        height: '100%',
+        ...style
+      },
+      ...props
+    })
   }
-)
-PixelCanvas.displayName = "PixelCanvas"
 
-export { PixelCanvas }
+export const PixelCanvas = React.forwardRef<HTMLDivElement, PixelCanvasProps>(PixelCanvasComponent)
+
+PixelCanvas.displayName = "PixelCanvas"

@@ -8,33 +8,29 @@ export const OPENROUTER_CONFIG = {
 
 export const AI_MODELS = [
   {
+    name: "nvidia/llama-3.1-nemotron-ultra-253b-v1:free",
+    temperature: 0.2,
+    maxTokens: 4000
+  },
+  {
     name: "deepseek/deepseek-r1-zero:free",
     temperature: 0.2,
-    maxTokens: 4000
-  },
-  {
-    name: "open-r1/olympiccoder-32b:free",
-    temperature: 0.2,
-    maxTokens: 4000
-  },
-  {
-    name: "mistralai/mistral-small-3.1-24b-instruct",
-    temperature: 0.2,
-    maxTokens: 4000
+    maxTokens: 8000
   },
   {
     name: "qwen/qwq-32b:free",
     temperature: 0.2,
-    maxTokens: 4000
+    maxTokens: 8000
   },
   {
-    name: "anthropic/claude-3-opus",
+    name: "microsoft/phi-4-reasoning-plus:free",
     temperature: 0.2,
-    maxTokens: 4000
+    maxTokens: 8000
   },
   {
-    name: "openai/gpt-4-turbo",
+    name: "opengvlab/internvl3-14b:free",
     temperature: 0.2,
-    maxTokens: 4000
-  }
+    maxTokens: 8000
+  },
+  
 ];

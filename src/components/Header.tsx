@@ -19,13 +19,13 @@ const navItems = [
     color: "bg-[#10B981]",
     hoverColor: "hover:bg-[#10B981]/20 hover:text-[#10B981]"
   },
-  { 
-    path: "/analyze", 
-    label: "Analyze", 
-    icon: LineChart, 
-    color: "bg-red-600",
-    hoverColor: "hover:bg-red-600/20 hover:text-red-600"
-  },
+  // { 
+  //   path: "/analyze", 
+  //   label: "Analyze", 
+  //   icon: LineChart, 
+  //   color: "bg-red-600",
+  //   hoverColor: "hover:bg-red-600/20 hover:text-red-600"
+  // },
   { 
     path: "/convert", 
     label: "Convert", 
@@ -33,13 +33,13 @@ const navItems = [
     color: "bg-purple-600",
     hoverColor: "hover:bg-purple-600/20 hover:text-purple-600"
   },
-  { 
-    path: "/standup", 
-    label: "DailyStandup", 
-    icon: Speech, 
-    color: "bg-amber-500",
-    hoverColor: "hover:bg-amber-500/20 hover:text-amber-500"
-  },
+  // { 
+  //   path: "/standup", 
+  //   label: "DailyStandup", 
+  //   icon: Speech, 
+  //   color: "bg-amber-500",
+  //   hoverColor: "hover:bg-amber-500/20 hover:text-amber-500"
+  // },
   { 
     path: "/prompt", 
     label: "Prompt", 

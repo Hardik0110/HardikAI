@@ -1,48 +1,54 @@
 import { Router } from 'express';
-import { makeOpenRouterRequest, tryMultipleModels } from '../utils.js';
 
 export default function(OPENROUTER_CONFIG, AI_MODELS) {
   const router = Router();
 
+  const timeoutPromise = (ms) => new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Request timeout')), ms)
+  );
+
   async function processOptimize(modelConfig, code, systemPrompt) {
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
-          'HTTP-Referer': OPENROUTER_CONFIG.referer,
-          'X-Title': OPENROUTER_CONFIG.appName
-        },
-        body: JSON.stringify({
-          model: modelConfig.name,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: code }
-          ],
-          temperature: modelConfig.temperature || 0.3,
-          max_tokens: modelConfig.maxTokens || 4000
-        })
-      });
+      const response = await Promise.race([
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
+            'HTTP-Referer': OPENROUTER_CONFIG.referer,
+            'X-Title': OPENROUTER_CONFIG.appName
+          },
+          body: JSON.stringify({
+            model: modelConfig.name,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: code }
+            ],
+            temperature: 0.2,
+            max_tokens: modelConfig.maxTokens || 4000,
+            stream: false 
+          })
+        }),
+        timeoutPromise(15000) 
+      ]);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      const optimizedCode = result.choices?.[0]?.message?.content;
+      const optimizedCode = result.choices?.[0]?.message?.content?.trim();
 
       if (!optimizedCode) {
-        console.error('No optimized code in response:', result);
-        return null;
+        throw new Error('No optimized code in response');
       }
 
       return { 
         optimizedCode,
-        usedModel: modelConfig.name
+        usedModel: modelConfig.name 
       };
     } catch (error) {
-      console.error(`Error optimizing with ${modelConfig.name}:`, error);
+      console.error(`Error with ${modelConfig.name}:`, error.message);
       return null;
     }
   }
@@ -53,48 +59,43 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
       return res.status(400).json({ error: 'No code provided' });
     }
 
-    const systemPrompt = `You are an expert code optimizer. Your task is to optimize the given code.
+    const systemPrompt = `You are an expert code optimizer. Optimize this ${optimizationType} code.
+    IMPORTANT: Return ONLY the optimized code without any explanations.
     
-    If optimizationType is:
-    - hooks: Modernize code using latest React hooks and patterns
-    - readability: Improve code readability with better formatting and structure
-    - linting: Fix code style and potential issues
-    - bugs: Identify and fix potential bugs
+    For ${optimizationType}:
+    ${optimizationType === 'hooks' ? '- Use modern React hooks and patterns\n- Convert class components to functional\n- Implement proper hook dependencies' :
+      optimizationType === 'readability' ? '- Improve formatting and structure\n- Add meaningful variable names\n- Break down complex logic' :
+      optimizationType === 'linting' ? '- Fix code style issues\n- Remove unused imports\n- Follow best practices' :
+      optimizationType === 'bugs' ? '- Identify and fix potential bugs\n- Add error handling\n- Fix edge cases' :
+      '- Identify and fix potential performance issues\n- Add make the code faster\n- Fix edge cases'}
 
-    Current optimization type: ${optimizationType}
-
-    Rules:
-    1. Return ONLY the optimized code
-    2. Preserve core functionality
-    3. Add comments for significant changes
-    4. Use modern JavaScript/TypeScript features
-    5. Ensure code is complete and runnable
-
-    Original code to optimize:
-    ${code}`;
+    Code to optimize:\n${code}`;
 
     try {
-      const result = await tryMultipleModels(AI_MODELS, processOptimize, code, systemPrompt);
-      
-      if (!result || !result.optimizedCode) {
+      const modelPromises = AI_MODELS.map(model => 
+        processOptimize(model, code, systemPrompt)
+      );
+
+      const results = await Promise.allSettled(modelPromises);
+      const successfulResult = results.find(
+        r => r.status === 'fulfilled' && r.value?.optimizedCode
+      )?.value;
+
+      if (!successfulResult) {
         return res.status(500).json({ 
           error: 'Failed to optimize code',
-          details: 'No valid optimization result received'
+          details: 'All models failed to provide valid output'
         });
       }
 
       console.log('Optimization successful:', {
-        originalLength: code.length,
-        optimizedLength: result.optimizedCode.length,
-        usedModel: result.usedModel
+        modelUsed: successfulResult.usedModel,
+        outputLength: successfulResult.optimizedCode.length
       });
 
-      res.json({ 
-        optimizedCode: result.optimizedCode, 
-        usedModel: result.usedModel 
-      });
+      res.json(successfulResult);
     } catch (error) {
-      console.error('API error:', error);
+      console.error('Optimization error:', error);
       res.status(500).json({ 
         error: 'Error processing request', 
         details: error.message 

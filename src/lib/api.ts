@@ -147,42 +147,53 @@ export async function convertCode(request: ConvertRequest): Promise<ConversionRe
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(request),
     });
 
+    const responseText = await response.text();
+    console.log('Raw API Response:', responseText);
+
     if (!response.ok) {
-      console.error('Convert API error status:', response.status);
       let errorMessage = 'Failed to convert code';
-      
       try {
-        const errorData = await response.json();
-        errorMessage = errorData.details || errorMessage;
-      } catch (jsonError) {
-        console.error('Error parsing error response:', jsonError);
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.details || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Error parsing error response:', e);
       }
-      
       throw new Error(errorMessage);
     }
 
+    let data;
     try {
-      const data = await response.json();
-      
-      if (!data || !data.convertedCode || typeof data.convertedCode !== 'string') {
-        console.error('Invalid conversion response:', data);
-        throw new Error('Invalid conversion response format');
-      }
-
-      return {
-        convertedCode: data.convertedCode,
-        usedModel: data.usedModel || 'unknown'
-      };
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      throw new Error('Error parsing conversion response');
+      data = JSON.parse(responseText);
+      console.log('Parsed response data:', data);
+    } catch (e) {
+      console.error('Failed to parse response:', responseText);
+      throw new Error('Invalid JSON response from server');
     }
+
+    // Validate response structure
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid response format: expected an object');
+    }
+
+    if (!data.convertedCode || typeof data.convertedCode !== 'string') {
+      console.error('Invalid conversion response structure:', data);
+      throw new Error('Missing or invalid convertedCode in response');
+    }
+
+    return {
+      convertedCode: data.convertedCode,
+      usedModel: data.usedModel || 'unknown'
+    };
   } catch (error) {
-    console.error('API error:', error);
+    console.error('API error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      error
+    });
     throw error;
   }
 }

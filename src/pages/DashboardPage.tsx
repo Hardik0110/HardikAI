@@ -1,14 +1,8 @@
 import { Link } from "react-router-dom"
-import { CodeIcon, LineChart, FileCode, Speech } from "lucide-react" 
+import { CodeIcon, LineChart, FileCode, Speech, BotMessageSquare, Dog } from "lucide-react" 
 import { motion } from "framer-motion"
 import { PixelCanvas } from "@/components/ui/pixel-canvas"
 import { memo } from "react"
-
-interface BackgroundImageProps {
-  src: string;
-  position: string;
-  maxWidth?: string;
-}
 
 interface DashboardCardProps {
   card: typeof CARD_CONFIG[0];
@@ -24,16 +18,11 @@ const CARD_VARIANTS = {
   }),
 }
 
-const BACKGROUND_IMAGES = [
-  { src: "../assets/optimize.png", position: "left-16 -top-12", maxWidth: undefined },
-  { src: "../assets/analyze.png", position: "right-16 -top-10", maxWidth: undefined },
-  { src: "../assets/dailystandup.png", position: "right-20 -bottom-10", maxWidth: undefined },
-  { src: "../assets/convert.png", position: "left-16 -bottom-20", maxWidth: undefined }
-]
-
 const CARD_CONFIG = [
   { 
-    path: "/optimize", 
+    path: "/optimize",  
+    name: "Optimize",
+    nameColor: "#08D9D6",
     borderColor: "border-[#08D9D6]", 
     colors: ["#D1FAE5", "#10B981", "#08D9D6"],
     icon: CodeIcon,
@@ -42,7 +31,9 @@ const CARD_CONFIG = [
     alt: "Code Optimization"
   },
   { 
-    path: "/analyze", 
+    path: "/analyze",
+    name: "Analyze",
+    nameColor: "#DC2626",
     borderColor: "border-red-500", 
     colors: ["#FEE2E2", "#F87171", "#DC2626"],
     icon: LineChart,
@@ -51,7 +42,9 @@ const CARD_CONFIG = [
     alt: "Data Analysis"
   },
   { 
-    path: "/convert", 
+    path: "/convert",
+    name: "Convert",
+    nameColor: "#9333EA",
     borderColor: "border-purple-500", 
     colors: ["#F3E8FF", "#C084FC", "#9333EA"],
     icon: FileCode,
@@ -60,29 +53,37 @@ const CARD_CONFIG = [
     alt: "File Conversion"
   },
   { 
-    path: "/standup", 
+    path: "/standup",
+    name: "Standup",
+    nameColor: "#F59E0B",
     borderColor: "border-yellow-500", 
     colors: ["#FFFBEB", "#FCD34D", "#F59E0B"],
     icon: Speech,
     iconColor: "text-yellow-500",
     hoverColor: "group-hover:text-yellow-400",
     alt: "Daily Standup"
+  },
+  { 
+    path: "/prompt",
+    name: "Prompt",
+    borderColor: "border-sky-600", 
+    colors: ["#7DD3FC", "#0284C7", "#075985"],
+    icon: BotMessageSquare,
+    iconColor: "text-sky-600",
+    hoverColor: "group-hover:text-sky-400",
+    alt: "Prompt Generator"
+  },
+  { 
+    path: "/login",
+    name: "Prompt",
+    borderColor: "border-green-600", 
+    colors: ["#6EE7B7", "#22C55E", "#15803D"],
+    icon: Dog,
+    iconColor: "text-green-600",
+    hoverColor: "group-hover:text-green-400",
+    alt: "Prompt Generator"
   }
-]
-
-const BackgroundImage = memo(({ src, position, maxWidth }: BackgroundImageProps) => (
-  <motion.img
-    src={src}
-    alt=""
-    className={`fixed ${position} w-[600px] h-[600px] opacity-70 lg:block hidden pointer-events-none`}
-    style={{ maxWidth: maxWidth || '30vw' }}
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 0.7 }}
-    transition={{ duration: 0.8, ease: "easeOut" }}
-  />
-))
-
-BackgroundImage.displayName = 'BackgroundImage'
+];
 
 
 
@@ -102,7 +103,7 @@ const DashboardCard = memo(({ card, index }: DashboardCardProps) => {
         aria-label={alt}
       >
         <div className={`group relative w-[24rem] h-[18rem] rounded-2xl overflow-hidden border ${borderColor}`}>
-          <PixelCanvas
+          <PixelCanvas 
             gap={10}
             speed={25}
             colors={colors}
@@ -123,16 +124,8 @@ export default function DashboardPage() {
   return (
     <div className="relative container mx-auto px-4">
       <div className="relative flex items-center justify-center mt-6">
-        {BACKGROUND_IMAGES.map((img, index) => (
-          <BackgroundImage
-            key={`bg-${index}`}
-            src={img.src}
-            position={img.position}
-            maxWidth={img.maxWidth}
-          />
-        ))}
 
-        <div className="grid gap-8 md:grid-cols-2 justify-items-center">
+        <div className="grid gap-8 md:grid-cols-3 justify-items-center">
           {CARD_CONFIG.map((card, index) => (
             <DashboardCard 
               key={`card-${index}`}

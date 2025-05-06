@@ -20,7 +20,7 @@ export default function IntroductionPage() {
         >
           Welcome to{" "}
           <AnimatedText
-            text="Hardik's {AI}"
+            text="Ai Code Optimizer"
             className="inline-block"
             replay={true}
             delay={0.05}
@@ -33,7 +33,11 @@ export default function IntroductionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          Optimize your code and analyze stocks with  AI 
+          Optimize your code with the power of AI. Our platform provides a seamless
+          and efficient way to enhance your coding experience. Whether you're a
+          beginner or an experienced developer, our AI-driven tools will help you
+          write cleaner, more efficient code. Join us and take your coding skills
+          to the next level!
         </motion.p>
         <motion.div
           className="pt-6"
