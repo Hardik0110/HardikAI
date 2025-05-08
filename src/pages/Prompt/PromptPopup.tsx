@@ -1,23 +1,24 @@
-import { motion } from "framer-motion";
-import { X, Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion"
+import { X, Copy } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import { usePromptStore } from "@/lib/stores/usePromptStore"
+import { PromptPopupProps } from "@/lib/types";
 
-interface PromptPopupProps {
-  prompt: string;
-  onClose: () => void;
-}
-
-const PromptPopup = ({ prompt, onClose }: PromptPopupProps) => {
-  const { toast } = useToast();
+const PromptPopup: React.FC<PromptPopupProps> = () => {
+  const { toast } = useToast()
+  const { generatedPrompt, setGeneratedPrompt } = usePromptStore()
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(prompt);
+    if (!generatedPrompt) return
+    await navigator.clipboard.writeText(generatedPrompt)
     toast({
       title: "Copied",
       description: "Prompt copied to clipboard",
-    });
-  };
+    })
+  }
+
+  if (!generatedPrompt) return null
 
   return (
     <motion.div
@@ -32,8 +33,8 @@ const PromptPopup = ({ prompt, onClose }: PromptPopupProps) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
       >
-        <button 
-          onClick={onClose}
+        <button
+          onClick={() => setGeneratedPrompt(null)}
           className="absolute top-2 right-2 text-gray-400 hover:text-gray-200"
         >
           <X className="h-5 w-5" />
@@ -41,9 +42,9 @@ const PromptPopup = ({ prompt, onClose }: PromptPopupProps) => {
 
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-sky-400">Generated Prompt</h3>
-          
+
           <div className="bg-sky-900/50 rounded-md p-4 border border-sky-400/20">
-            <p className="text-gray-200 whitespace-pre-wrap">{prompt}</p>
+            <p className="text-gray-200 whitespace-pre-wrap">{generatedPrompt}</p>
           </div>
 
           <div className="flex justify-end gap-2">
@@ -58,7 +59,7 @@ const PromptPopup = ({ prompt, onClose }: PromptPopupProps) => {
             <Button
               variant="default"
               className="bg-sky-600 hover:bg-sky-700"
-              onClick={onClose}
+              onClick={() => setGeneratedPrompt(null)}
             >
               Close
             </Button>
@@ -66,7 +67,7 @@ const PromptPopup = ({ prompt, onClose }: PromptPopupProps) => {
         </div>
       </motion.div>
     </motion.div>
-  );
-};
+  )
+}
 
-export default PromptPopup;
+export default PromptPopup

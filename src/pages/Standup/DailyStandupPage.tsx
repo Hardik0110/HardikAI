@@ -1,14 +1,13 @@
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generateStandup } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
-import { StandupResult } from '@/lib/types'
 import { FileText } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { StandupPopup } from './StandupPopup'
+import { useStandupStore } from '@/lib/stores/useStandupStore'
 
 function BackgroundImages() {
   const imageConfig = [
@@ -43,9 +42,14 @@ function BackgroundImages() {
 
 export default function DailyStandupPage() {
   const { toast } = useToast();
-  const [standupResult, setStandupResult] = useState<StandupResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [rawText, setRawText] = useState('');
+  const { 
+    rawText, 
+    isLoading, 
+    standupResult, 
+    setRawText, 
+    setIsLoading, 
+    setStandupResult 
+  } = useStandupStore();
 
   const onTextSubmit = async () => {
     if (!rawText.trim()) {
@@ -59,21 +63,7 @@ export default function DailyStandupPage() {
 
     setIsLoading(true);
     try {
-      console.log('Generating standup with input:', {
-        textLength: rawText.length,
-        timestamp: new Date().toISOString(),
-        preview: rawText.substring(0, 100) + '...' 
-      });
-
       const result = await generateStandup(rawText);
-
-      console.log('Standup API Response:', {
-        formattedText: result.formattedText,
-        usedModel: result.usedModel,
-        timestamp: new Date().toISOString(),
-        success: true
-      });
-
       setStandupResult(result);
       toast({
         title: 'Standup generated',

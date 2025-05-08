@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,15 +11,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import PromptPopup from "./PromptPopup";
 import { Sparkles, Type, Send } from "lucide-react";
+import { usePromptStore } from "@/lib/stores/usePromptStore";
 
 const PromptGenerationPage = () => {
   const { toast } = useToast();
-  const [promptType, setPromptType] = useState("Select Prompt Type");
-  const [userInput, setUserInput] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPrompt, setGeneratedPrompt] = useState(null);
-
-  const handleSelect = (type: string) => setPromptType(type);
+  const {
+    promptType,
+    userInput,
+    isGenerating,
+    generatedPrompt,
+    setPromptType, 
+    setUserInput,
+    setIsGenerating,
+    setGeneratedPrompt,
+  } = usePromptStore();
 
   const handleGenerate = async () => {
     if (!userInput.trim()) {
@@ -54,9 +58,7 @@ const PromptGenerationPage = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate prompt");
-      }
+      if (!response.ok) throw new Error("Failed to generate prompt");
 
       const data = await response.json();
       setGeneratedPrompt(data.generatedPrompt);
@@ -72,7 +74,7 @@ const PromptGenerationPage = () => {
   };
 
   return (
-    <div className="min-h-screen  py-12">
+    <div className="min-h-screen py-12">
       <motion.div
         className="max-w-3xl mx-auto px-4"
         initial={{ opacity: 0, y: 20 }}
@@ -80,11 +82,7 @@ const PromptGenerationPage = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5 }}>
             <h2 className="text-4xl font-bold text-sky-700 inline-flex items-center gap-2">
               <Sparkles className="text-sky-500" size={32} />
               Prompt Generator
@@ -102,7 +100,7 @@ const PromptGenerationPage = () => {
               Create Your Prompt
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="p-6">
             <div className="space-y-6">
               <div className="space-y-2">
@@ -118,32 +116,23 @@ const PromptGenerationPage = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="border-sky-300 text-sky-700 hover:bg-sky-50 w-full sm:w-auto"
                     >
                       {promptType}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-white border-sky-200">
-                    <DropdownMenuItem 
-                      onClick={() => handleSelect("Short")}
-                      className="hover:bg-sky-50 hover:text-sky-700"
-                    >
-                      Short
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleSelect("Detailed")}
-                      className="hover:bg-sky-50 hover:text-sky-700"
-                    >
-                      Detailed
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleSelect("Precise")}
-                      className="hover:bg-sky-50 hover:text-sky-700"
-                    >
-                      Precise
-                    </DropdownMenuItem>
+                    {["Short", "Detailed", "Precise"].map((type) => (
+                      <DropdownMenuItem
+                        key={type}
+                        onClick={() => setPromptType(type)}
+                        className="hover:bg-sky-50 hover:text-sky-700"
+                      >
+                        {type}
+                      </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -161,9 +150,9 @@ const PromptGenerationPage = () => {
         </Card>
 
         {generatedPrompt && (
-          <PromptPopup
-            prompt={generatedPrompt}
-            onClose={() => setGeneratedPrompt(null)}
+          <PromptPopup 
+            prompt={generatedPrompt} 
+            onClose={() => setGeneratedPrompt(null)} 
           />
         )}
       </motion.div>

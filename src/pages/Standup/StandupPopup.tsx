@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { X, ClipboardList, Copy, CheckCircle } from 'lucide-react'
 import type { StandupResult } from '@/lib/types'
+import { useStandupStore } from '@/lib/stores/useStandupStore'
 
 interface StandupPopupProps {
   result: StandupResult
@@ -11,6 +12,7 @@ interface StandupPopupProps {
 
 export function StandupPopup({ result, onClose }: StandupPopupProps) {
   const [copied, setCopied] = useState(false)
+  const reset = useStandupStore(state => state.reset)
 
   const copyToClipboard = async () => {
     try {
@@ -20,6 +22,11 @@ export function StandupPopup({ result, onClose }: StandupPopupProps) {
     } catch (error) {
       console.error('Failed to copy:', error)
     }
+  }
+
+  const handleClose = () => {
+    reset()
+    onClose()
   }
 
   const popupVariants = {
@@ -44,7 +51,7 @@ export function StandupPopup({ result, onClose }: StandupPopupProps) {
         transition={{ duration: 0.3 }}
       >
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-yellow-400 transition-colors"
           aria-label="Close popup"
         >
@@ -87,7 +94,7 @@ export function StandupPopup({ result, onClose }: StandupPopupProps) {
           </div>
 
           <Button 
-            onClick={onClose} 
+            onClick={handleClose} 
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
           >
             Close Report

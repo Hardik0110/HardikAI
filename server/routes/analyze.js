@@ -35,18 +35,33 @@ export default function(OPENROUTER_CONFIG, AI_MODELS) {
       'Analyze this stock with detailed insights for each section.'
     );
     
-    if (!result) return null;
-    
+    // Add proper error handling and response validation
+    if (!result || !result.choices || !result.choices[0] || !result.choices[0].message) {
+      throw new Error('Invalid response from AI model');
+    }
+
     const analysis = result.choices[0].message.content;
+    if (!analysis) {
+      throw new Error('Empty analysis response');
+    }
 
     // Parse the analysis into sections
-    return {
+    const analysisResult = {
       technicalAnalysis: extractSection(analysis, "Technical Analysis"),
       marketTrends: extractSection(analysis, "Market Trends"),
       supportResistance: extractSection(analysis, "Support/Resistance"),
       stopLoss: extractSection(analysis, "Stop Loss"),
-      outlook: extractSection(analysis, "Overall Outlook")
+      outlook: extractSection(analysis, "Overall Outlook"),
+      usedModel: modelConfig.name || 'unknown'
     };
+
+    // Validate that we got all sections
+    if (!analysisResult.technicalAnalysis || !analysisResult.marketTrends || 
+        !analysisResult.supportResistance || !analysisResult.stopLoss ) {
+      throw new Error('Incomplete analysis response');
+    }
+
+    return analysisResult;
   }
 
   router.post('/', async (req, res) => {
